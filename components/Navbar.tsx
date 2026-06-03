@@ -11,7 +11,7 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
-  
+
   const { getCartCount, setCartOpen } = useCart();
   const cartCount = getCartCount();
 
@@ -37,13 +37,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-350 ${
-          isScrolled 
-            ? 'bg-primary-deep/95 backdrop-blur-md border-b border-accent/30 py-3 shadow-md' 
-            : 'bg-transparent py-5'
-        }`}
-      >
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-primary-deep/95 backdrop-blur-md border-b border-accent/30 py-3 shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Logo */}
@@ -66,11 +60,10 @@ export default function Navbar() {
                   <Link
                     key={link.name}
                     href={link.path}
-                    className={`font-subheading text-xs tracking-widest uppercase transition-colors duration-300 relative py-1 ${
-                      isActive 
-                        ? 'text-accent' 
-                        : 'text-cream/80 hover:text-accent'
-                    }`}
+                    className={`font-subheading text-xs tracking-widest uppercase transition-colors duration-300 relative py-1 ${isActive
+                      ? 'text-accent'
+                      : 'text-cream/80 hover:text-accent'
+                      }`}
                   >
                     {link.name}
                     {isActive && (
@@ -172,9 +165,8 @@ export default function Navbar() {
                         key={link.name}
                         href={link.path}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className={`font-subheading text-sm tracking-widest uppercase transition-colors duration-200 py-2 border-b border-cream/5 ${
-                          isActive ? 'text-accent' : 'text-cream/80 hover:text-accent'
-                        }`}
+                        className={`font-subheading text-sm tracking-widest uppercase transition-colors duration-200 py-2 border-b border-cream/5 ${isActive ? 'text-accent' : 'text-cream/80 hover:text-accent'
+                          }`}
                       >
                         {link.name}
                       </Link>

@@ -10,61 +10,87 @@ import CategoryShowcase from '@/components/CategoryShowcase';
 
 export default function Home() {
   // Select a few customer favorites to display in the strip
-  const featuredProducts = PRODUCTS.filter((p) => 
+  const featuredProducts = PRODUCTS.filter((p) =>
     ['1', '13', '15', '17', '20'].includes(p.id)
   );
 
   return (
     <div className="flex flex-col w-full bg-cream">
       {/* 1. HERO SECTION */}
-      <section className="relative min-h-[85vh] flex items-center justify-center bg-gradient-to-br from-primary-deep via-[#5c131d] to-primary-deep text-cream py-20 overflow-hidden">
-        {/* Subtle decorative elements */}
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#D4A341_1px,transparent_1px)] [background-size:20px_20px]" />
-        <div className="absolute top-1/4 left-1/10 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/10 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
+      <section className="relative min-h-[85vh] flex items-center justify-start py-20 overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/HeroSectionImage.png"
+            alt="Murad Sweets Background"
+            fill
+            priority
+            className="object-cover object-right sm:object-center"
+          />
+        </div>
 
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 space-y-8">
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="space-y-2"
-          >
-            <span className="font-script text-accent text-4xl sm:text-5xl md:text-6xl block">
-              Handcrafted Sweets
-            </span>
-            <h1 className="font-heading text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-white leading-tight">
-              Made with <span className="text-accent">Love & Tradition</span>
-            </h1>
-          </motion.div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
+          <div className="max-w-2xl space-y-8 text-left">
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col space-y-1">
+                <div className="flex items-center space-x-2 text-primary-deep">
+                  <svg className="h-5 w-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  <span className="font-subheading text-sm font-bold tracking-widest uppercase">
+                    Murad Sweets
+                  </span>
+                </div>
+                <span className="font-subheading text-[10px] tracking-widest text-primary-deep uppercase ml-7">
+                  Houston, Texas
+                </span>
+              </div>
 
-          <motion.p
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            className="max-w-xl mx-auto text-base sm:text-lg text-cream/85 font-body leading-relaxed"
-          >
-            Bringing authentic, premium Bangladeshi Mithai and home-baked heritage pitha to your doorstep in the USA.
-          </motion.p>
+              <h1 className="font-heading text-4xl sm:text-5xl md:text-[3.5rem] font-extrabold tracking-tight text-primary-deep leading-[1.1]">
+                Authentic Bangladeshi<br />
+                Mithai, Made with<br />
+                Tradition &amp; Love
+              </h1>
+            </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
-          >
-            <Link href="/products" className="w-full sm:w-auto btn-gold px-8 py-3.5 text-xs uppercase tracking-widest text-white shadow-lg bg-primary border border-primary hover:bg-primary-deep flex items-center justify-center space-x-2">
-              <ShoppingBag className="h-4 w-4 mr-2" />
-              <span>Order Now</span>
-            </Link>
-            <Link href="/products" className="w-full sm:w-auto px-8 py-3.5 text-xs uppercase tracking-widest text-cream font-subheading border border-cream/30 hover:border-accent hover:text-accent transition-all duration-300 flex items-center justify-center">
-              See Our Menu
-            </Link>
-          </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+              className="space-y-4"
+            >
+              <div className="w-12 h-[2px] bg-accent/60" />
+              <p className="text-base sm:text-lg text-primary-deep font-body leading-relaxed max-w-md">
+                Traditional recipes. Premium ingredients.<br />
+                Handcrafted with care in Houston.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex flex-col sm:flex-row items-start sm:items-center gap-4 pt-2"
+            >
+              <Link href="/products" className="w-full sm:w-auto px-8 py-3.5 text-xs uppercase tracking-widest text-cream shadow-lg bg-primary-deep border border-primary-deep hover:bg-primary transition-colors duration-300 flex items-center justify-center rounded-md font-subheading">
+                <span>Order Now</span>
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Link>
+              <Link href="/products" className="w-full sm:w-auto px-8 py-3.5 text-xs uppercase tracking-widest text-primary-deep font-subheading border border-primary-deep hover:bg-primary-deep hover:text-cream transition-all duration-300 flex items-center justify-center rounded-md">
+                Explore Sweets
+              </Link>
+            </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* 2. BUSINESS STORY / ABOUT SECTION */}
+      {/* 2. BUSINESS STORY / ABOUT SECTION
       <section id="about" className="py-20 bg-white border-y border-border scroll-mt-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6">
           <div className="flex flex-col items-center">
@@ -81,7 +107,7 @@ export default function Home() {
             &mdash; Preserving Traditions, One Sweet at a Time &mdash;
           </p>
         </div>
-      </section>
+      </section> */}
 
       {/* 3. CATEGORY SHOWCASE (scroll rhythm) */}
       <CategoryShowcase />
@@ -96,8 +122,8 @@ export default function Home() {
                 Customer Favourites
               </h2>
             </div>
-            <Link 
-              href="/products" 
+            <Link
+              href="/products"
               className="inline-flex items-center text-xs font-cinzel font-semibold text-primary hover:text-primary-deep tracking-widest uppercase border-b-2 border-primary pb-0.5 transition-all duration-200"
             >
               <span>View All Menu Items</span>
@@ -108,8 +134,8 @@ export default function Home() {
           {/* Scrollable Row */}
           <div className="flex overflow-x-auto pb-6 pt-2 gap-6 no-scrollbar snap-x snap-mandatory">
             {featuredProducts.map((product) => (
-              <div 
-                key={product.id} 
+              <div
+                key={product.id}
                 className="w-72 sm:w-80 flex-shrink-0 snap-start"
               >
                 <ProductCard product={product} />
