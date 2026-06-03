@@ -6,51 +6,13 @@ import { motion } from 'framer-motion';
 import { ArrowRight, ShoppingBag, MapPin, Calendar, Clock, Sparkles, Star } from 'lucide-react';
 import { PRODUCTS } from './data/products';
 import ProductCard from '@/components/ProductCard';
+import CategoryShowcase from '@/components/CategoryShowcase';
 
 export default function Home() {
   // Select a few customer favorites to display in the strip
   const featuredProducts = PRODUCTS.filter((p) => 
     ['1', '13', '15', '17', '20'].includes(p.id)
   );
-
-  const categories = [
-    {
-      id: 'dry-sweets',
-      name: 'Dry Sweets',
-      subtitle: 'Mix & Match Boxes',
-      desc: 'Build your custom box of traditional Kalojam, Chom Chom, Laddus, and Shandesh.',
-      badge: null,
-      icon: '🍬',
-      link: '/products?category=dry-sweets'
-    },
-    {
-      id: 'specialty',
-      name: 'Specialty Items',
-      subtitle: 'Premium Mithai & Cakes',
-      desc: 'Savor our signature Rasmalai Cake, warm Gulab Jamuns, and rich Mishti Doi.',
-      badge: null,
-      icon: '🍰',
-      link: '/products?category=specialty'
-    },
-    {
-      id: 'party-trays',
-      name: 'Party Trays',
-      subtitle: 'Festive Collections',
-      desc: 'Assorted sweet platters perfect for weddings, Eid, family events, and gatherings.',
-      badge: 'Bestseller',
-      icon: '✨',
-      link: '/products?category=party-trays'
-    },
-    {
-      id: 'pitha',
-      name: 'Traditional Pitha',
-      subtitle: 'Authentic Winter Cakes',
-      desc: 'Steamed and fried crepes, sweet and savory, stuffed with fresh coconut and date gur.',
-      badge: 'Pre-Order Only',
-      icon: '🍁',
-      link: '/products?category=pitha'
-    }
-  ];
 
   return (
     <div className="flex flex-col w-full bg-cream">
@@ -121,62 +83,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3. PRODUCT CATEGORIES */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-        <div className="text-center space-y-2">
-          <span className="font-script text-accent text-3xl">Hand-crafted Selections</span>
-          <h2 className="font-heading text-3xl sm:text-4xl text-primary font-extrabold tracking-tight">
-            Browse by Category
-          </h2>
-          <p className="text-xs sm:text-sm text-brown font-subheading uppercase tracking-widest">
-            Taste the authentic varieties of Bengal
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map((cat, idx) => (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: idx * 0.1 }}
-              key={cat.id}
-              className="premium-card bg-white p-6 flex flex-col justify-between h-full relative"
-            >
-              {cat.badge && (
-                <span className={`absolute top-4 right-4 px-2 py-0.5 text-[9px] font-subheading font-bold uppercase tracking-wider rounded ${
-                  cat.badge === 'Pre-Order Only' ? 'bg-accent text-primary-deep' : 'bg-primary text-cream'
-                }`}>
-                  {cat.badge}
-                </span>
-              )}
-              
-              <div className="space-y-4">
-                <div className="text-4xl">{cat.icon}</div>
-                <div>
-                  <h3 className="font-cinzel text-base text-primary-deep font-semibold">{cat.name}</h3>
-                  <p className="text-[10px] text-accent uppercase font-bold tracking-wider font-cinzel mt-0.5">
-                    {cat.subtitle}
-                  </p>
-                  <p className="text-xs text-brown font-body mt-2.5 leading-relaxed">
-                    {cat.desc}
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-6">
-                <Link 
-                  href={cat.link}
-                  className="inline-flex items-center text-xs font-cinzel font-bold text-primary hover:text-accent tracking-wider transition-colors duration-200"
-                >
-                  <span>Browse Category</span>
-                  <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
+      {/* 3. CATEGORY SHOWCASE (scroll rhythm) */}
+      <CategoryShowcase />
 
       {/* 4. FEATURED PRODUCTS STRIP */}
       <section className="py-20 bg-blush/30 border-y border-border">
