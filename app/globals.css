@@ -1,26 +1,123 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,800;1,700&family=Cinzel:wght@600;700&family=Lato:wght@400;700&family=Great+Vibes&display=swap');
 @import "tailwindcss";
 
+@theme {
+  /* ── Color Palette (from brand guide) ── */
+  --color-primary: #7B1E2B;       /* Primary Maroon — headlines, key text, important elements */
+  --color-primary-deep: #4A0F17;  /* Deep Maroon — subtle contrast, emphasis, backgrounds */
+  --color-blush: #F6DCDC;         /* Soft Blush — backgrounds, soft sections, subtle fills */
+  --color-cream: #FFE9E1;         /* Light Cream — main background, clean & warm base */
+  --color-gold: #D4A341;           /* Gold Accent — highlights, icons, badges, premium feel */
+  --color-brown: #8A5A2B;          /* Rich Brown — secondary accents, balance, warmth */
+
+  /* ── Semantic aliases ── */
+  --color-bg: var(--color-cream);
+  --color-bg-alt: var(--color-blush);
+  --color-text: var(--color-primary-deep);
+  --color-text-muted: var(--color-brown);
+  --color-border: #E8C8C8;
+  --color-accent: var(--color-gold);
+
+  /* ── Typography ── */
+  --font-heading: 'Passenger Serif', 'Playfair Display', serif;   /* ExtraBold — main headlines, titles, promotions */
+  --font-subheading: 'Cinzel', serif;                             /* SemiBold — subheadings, section titles, price highlights */
+  --font-body: 'Lato', sans-serif;                                /* Regular — body text, descriptions, contact info */
+  --font-accent: 'Great Vibes', cursive;                          /* Script — decorative words, calligraphy accents */
+
+  /* ── Spacing & Shape ── */
+  --radius-card: 12px;
+  --radius-btn: 8px;
+  --shadow-card: 0 4px 20px rgba(74, 15, 23, 0.08);
+  --shadow-elevated: 0 10px 30px rgba(74, 15, 23, 0.15);
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: var(--color-cream);
+  --foreground: var(--color-primary-deep);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-cream);
+  color: var(--color-primary-deep);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+}
+
+/* Custom premium styles */
+h1, h2 {
+  font-family: var(--font-heading);
+  font-weight: 800;
+}
+
+h3, h4, .font-cinzel {
+  font-family: var(--font-subheading);
+  font-weight: 600;
+}
+
+.font-script {
+  font-family: var(--font-accent);
+}
+
+/* Premium Card Hover Transitions */
+.premium-card {
+  background-color: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.premium-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-elevated);
+  border-color: var(--color-accent);
+}
+
+/* Gold Button Hover Transitions */
+.btn-gold {
+  background-color: var(--color-primary);
+  color: white;
+  font-family: var(--font-subheading);
+  font-weight: 600;
+  border-radius: var(--radius-btn);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(123, 30, 43, 0.15);
+}
+
+.btn-gold:hover:not(:disabled) {
+  background-color: var(--color-primary-deep);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(74, 15, 23, 0.25);
+}
+
+.btn-gold:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Saffron Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-cream);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-deep);
 }
