@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Phone, MapPin, Clock, MessageCircle } from 'lucide-react';
 
 const FacebookIcon = ({ className }: { className?: string }) => (
@@ -24,12 +25,21 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           {/* Brand Info */}
           <div className="space-y-4 md:col-span-1">
-            <Link href="/" className="flex flex-col">
-              <span className="font-heading text-2xl font-extrabold tracking-tight text-accent">
-                Murad Sweets
-              </span>
-              <span className="text-[10px] uppercase tracking-[0.25em] text-cream font-subheading">
-                Artisanal Mithai
+            <Link href="/" className="flex items-center gap-3">
+              <Image
+                src="/murad-logo.jpg"
+                alt="Murad Sweets"
+                width={56}
+                height={56}
+                className="h-14 w-14 rounded-full border border-accent/40 object-cover shadow-sm"
+              />
+              <span className="flex flex-col">
+                <span className="font-heading text-2xl font-extrabold tracking-tight text-accent leading-none">
+                  Murad Sweets
+                </span>
+                <span className="mt-1 text-[10px] uppercase tracking-[0.25em] text-cream font-subheading">
+                  Artisanal Mithai
+                </span>
               </span>
             </Link>
             <p className="text-xs text-cream/75 leading-relaxed font-body">
@@ -125,7 +135,13 @@ export default function Footer() {
 
         {/* Ornament divider and Copyright */}
         <div className="border-t border-accent/20 pt-8 mt-8 text-center flex flex-col items-center">
-          <div className="font-script text-accent text-3xl mb-3 select-none">Murad Sweets</div>
+          <Image
+            src="/murad-logo.jpg"
+            alt="Murad Sweets"
+            width={72}
+            height={72}
+            className="mb-3 h-[72px] w-[72px] rounded-full border border-accent/40 object-cover shadow-sm"
+          />
           <p className="text-[10px] text-cream/50 uppercase tracking-widest font-subheading">
             &copy; {currentYear} Murad Sweets. All rights reserved. Made with love.
           </p>

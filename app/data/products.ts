@@ -109,7 +109,7 @@ export const PRODUCTS: Product[] = [
     category: 'dry-sweets',
     description: 'Aromatic Motichoor Laddus made from tiny chickpea flour globules fried in pure ghee, sweetened and shaped into golden spheres.',
     price: 0,
-    images: ['https://images.unsplash.com/photo-1548680373-ab6d4a5b48d7?w=600&auto=format&fit=crop&q=80'],
+    images: ['/laddu.png'],
     inStock: true,
     isMixMatch: true
   },
@@ -131,7 +131,7 @@ export const PRODUCTS: Product[] = [
     category: 'dry-sweets',
     description: 'Soft milk-solid balls fried, sweetened, and rolled in dry desiccated coconut, making them clean and easy to handle.',
     price: 0,
-    images: ['https://images.unsplash.com/photo-1548680373-ab6d4a5b48d7?w=600&auto=format&fit=crop&q=80'],
+    images: ['/gulab-jamun.png'],
     inStock: true,
     isMixMatch: true
   },
@@ -154,7 +154,7 @@ export const PRODUCTS: Product[] = [
     description: 'An innovative fusion dessert merging vanilla sponge cake soaked in saffron cardamom milk (ras) and topped with actual Rasmalai pieces and pistachios.',
     price: 7,
     unit: 'per cake (8oz)',
-    images: ['https://images.unsplash.com/photo-1587314168485-3236d6710814?w=600&auto=format&fit=crop&q=80'],
+    images: ['/rasmalai.png'],
     inStock: true
   },
   {
@@ -165,7 +165,7 @@ export const PRODUCTS: Product[] = [
     description: 'Soft, golden-brown dumplings made of milk solids, deep-fried and soaked in a warm, fragrant sugar syrup with rosewater and cardamom.',
     price: 6,
     unit: 'per box (4pc)',
-    images: ['https://images.unsplash.com/photo-1548680373-ab6d4a5b48d7?w=600&auto=format&fit=crop&q=80'],
+    images: ['/gulab-jamun.png'],
     inStock: true
   },
   {
@@ -176,7 +176,7 @@ export const PRODUCTS: Product[] = [
     description: 'Classic Bengali fermented sweet yogurt, prepared in traditional clay pots by boiling milk until thickened, sweetening with brown sugar/jaggery, and fermenting overnight.',
     price: 10,
     unit: 'per box (16oz)',
-    images: ['https://images.unsplash.com/photo-1571244856353-fb085fa5806d?w=600&auto=format&fit=crop&q=80'],
+    images: ['/mishti-doi.png'],
     inStock: true
   },
   {

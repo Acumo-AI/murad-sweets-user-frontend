@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { ShoppingBag, Menu, X } from 'lucide-react';
 import { useCart } from '@/app/store/useCart';
@@ -42,12 +43,22 @@ export default function Navbar() {
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex-shrink-0">
-              <Link href="/" className="flex flex-col select-none">
-                <span className="font-heading text-xl sm:text-2xl font-extrabold tracking-tight text-cream hover:text-accent transition-colors duration-200">
-                  Murad Sweets
-                </span>
-                <span className="text-[9px] uppercase tracking-[0.25em] text-accent font-subheading">
-                  Artisanal Mithai
+              <Link href="/" className="flex items-center gap-3 select-none">
+                <Image
+                  src="/murad-logo.jpg"
+                  alt="Murad Sweets"
+                  width={40}
+                  height={40}
+                  priority
+                  className="h-10 w-10 rounded-full border border-accent/40 object-cover shadow-sm"
+                />
+                <span className="flex flex-col">
+                  <span className="font-heading text-lg sm:text-xl font-extrabold tracking-tight text-cream hover:text-accent transition-colors duration-200 leading-none">
+                    Murad Sweets
+                  </span>
+                  <span className="mt-1 text-[8px] uppercase tracking-[0.25em] text-accent font-subheading">
+                    Artisanal Mithai
+                  </span>
                 </span>
               </Link>
             </div>
@@ -140,12 +151,21 @@ export default function Navbar() {
               <div className="flex flex-col space-y-8">
                 {/* Header inside drawer */}
                 <div className="flex items-center justify-between pb-6 border-b border-accent/20">
-                  <div className="flex flex-col">
-                    <span className="font-heading text-xl font-extrabold text-cream">
-                      Murad Sweets
-                    </span>
-                    <span className="text-[8px] uppercase tracking-[0.2em] text-accent font-subheading">
-                      Artisanal Mithai
+                  <div className="flex items-center gap-3">
+                    <Image
+                      src="/murad-logo.jpg"
+                      alt="Murad Sweets"
+                      width={48}
+                      height={48}
+                      className="h-12 w-12 rounded-full border border-accent/40 object-cover shadow-sm"
+                    />
+                    <span className="flex flex-col">
+                      <span className="font-heading text-xl font-extrabold text-cream leading-none">
+                        Murad Sweets
+                      </span>
+                      <span className="mt-1 text-[8px] uppercase tracking-[0.2em] text-accent font-subheading">
+                        Artisanal Mithai
+                      </span>
                     </span>
                   </div>
                   <button
