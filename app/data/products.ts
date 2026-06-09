@@ -2,7 +2,7 @@ export type Product = {
   id: string;
   slug: string;
   name: string;
-  category: 'dry-sweets' | 'specialty' | 'party-trays' | 'pitha' | 'mishti-per-pound';
+  category: string;
   description: string;
   price: number;         // base price (0 for dry-sweets since they are Mix & Match)
   unit?: string;         // e.g. "per box (4pc)", "per cake (8oz)"
@@ -11,6 +11,7 @@ export type Product = {
   preOrderOnly?: boolean;
   minOrderQty?: number;  // for Pitha (10)
   isMixMatch?: boolean;  // for Dry Sweets box
+  product_type?: string;
 };
 
 export const PRODUCTS: Product[] = [

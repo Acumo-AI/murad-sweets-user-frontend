@@ -6,128 +6,7 @@ import { useCart } from '@/app/store/useCart';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 
-const MISHTI_ITEMS = [
-  {
-    id: 'mpp-brown-chom-chom',
-    name: 'Brown Chom Chom',
-    price: 13,
-    unit: 'per lb',
-    description: 'Classic Bangladeshi oval-shaped sweet made of dense chenna (curdled milk), slowly cooked to a rich mahogany brown color.',
-    image: 'https://items-images-production-f.squarecdn.com/files/0a1baff12638918784fd42eec0e02233c57874f2/original.jpeg?width=512&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'mpp-white-chom-chom',
-    name: 'White Chom Chom',
-    price: 12,
-    unit: 'per lb',
-    description: 'Delicate, ivory-white chom chom made of soft chenna, simmered in light syrup.',
-    image: 'https://items-images-production-f.squarecdn.com/files/85c894a2cdfa49fc91468a6ed389376d7bd901e1/original.png?width=640&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'mpp-kalojam',
-    name: 'Kalojam',
-    price: 12,
-    unit: 'per lb',
-    description: 'Traditional deep-fried milk-solid dumplings soaked in sugar syrup, featuring a caramelized outer layer.',
-    image: 'https://items-images-production-f.squarecdn.com/files/ef1d699f951f2db300ae859cc6b39897c79095b8/original.jpeg?width=640&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'mpp-rajbhog',
-    name: 'Rajbhog',
-    price: 12,
-    unit: 'per lb',
-    description: 'Grand-sized chenna spheres stuffed with dry fruits, simmered in saffron syrup.',
-    image: 'https://items-images-production-f.squarecdn.com/files/95c97a84a6f3b0265c89796fe61e83547fc30bbd/original.jpeg?width=640&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'mpp-malaikari',
-    name: 'Malaikari',
-    price: 13,
-    unit: 'per lb',
-    description: 'Plump chenna rounds cooked in syrup and coated with luscious saffron malai reduction.',
-    image: 'https://items-images-production-f.squarecdn.com/files/b1197d7095486976b4b572dbd02f821bfdbca151/original.jpeg?width=640&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'mpp-shandesh',
-    name: 'Shandesh',
-    price: 13,
-    unit: 'per lb',
-    description: 'Traditional dry sweet made from fresh paneer and date molasses.',
-    image: 'https://items-images-production-f.squarecdn.com/files/c3fd77de3125fbebfaf08a34328df9718f044cf9/original.jpeg?width=640&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'mpp-gulab-jamun',
-    name: 'Gulab Jamun',
-    price: 12,
-    unit: 'per lb',
-    description: 'Soft milk-solid balls fried, sweetened, and rolled in desiccated coconut.',
-    image: 'https://items-images-production-f.squarecdn.com/files/e165ec6df7b6a9094b2a46d22efc4d107061e1f8/original.jpeg?width=640&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'mpp-kheer-mouchak',
-    name: 'Kheer Mouchak',
-    price: 13,
-    unit: 'per lb',
-    description: 'Honeycomb-shaped delight made with chenna and covered with creamy reduced milk.',
-    image: 'https://items-images-production-f.squarecdn.com/files/6b5ab94ac6f70f24feba421fb318ef7c9efa9917/original.jpeg?width=640&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'mpp-kala-jamun-sandwich',
-    name: 'Kala Jamun Sandwich',
-    price: 13,
-    unit: 'per lb',
-    description: 'Variation of Kalojam filled with a thick layer of sweetened cream (malai).',
-    image: 'https://items-images-production-f.squarecdn.com/files/1e4a710e5852bebb0ec3993ac604e4dd9dedf4c5/original.jpeg?width=640&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'mpp-laddu',
-    name: 'Laddu',
-    price: 13,
-    unit: 'per lb',
-    description: 'Aromatic Motichoor Laddus made from tiny chickpea flour globules.',
-    image: 'https://items-images-production-f.squarecdn.com/files/3894a89462eb13d67a7d65a15bed28c891501566/original.jpeg?width=640&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'mpp-katari-bhog',
-    name: 'Katari Bhog',
-    price: 15,
-    unit: 'per lb',
-    description: 'Artisanal sweet consisting of textured chenna balls cooked in date jaggery syrup.',
-    image: 'https://items-images-production-f.squarecdn.com/files/5f2e1c7cf8e32ecc2c4dec89d5b0add8c62faa72/original.jpeg?width=640&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'mpp-sponge-roshogolla',
-    name: 'Sponge RoshoGolla',
-    price: 13,
-    unit: 'per lb',
-    description: 'Light, spongy cottage cheese balls soaked in clear sugar syrup.',
-    image: 'https://items-images-production-f.squarecdn.com/files/0029b1cd24594552c6599c39c2cae943b9cf9add/original.jpeg?width=640&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'mpp-classic-roshogolla',
-    name: 'Classic RoshoGolla',
-    price: 12,
-    unit: 'per lb',
-    description: 'Traditional Bengali melt-in-mouth cottage cheese balls in sweet syrup.',
-    image: 'https://items-images-production-f.squarecdn.com/files/e8fc97b3018980221d29bdab1d177b64e46fe4be/original.jpeg?width=640&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'mpp-peda',
-    name: 'Peda',
-    price: 12,
-    unit: 'per dozen',
-    description: 'Rich, semi-soft sweet made of condensed milk and sugar.',
-    image: 'https://items-images-production-f.squarecdn.com/files/5959be5a1eecc7bcef1982dcc39a1fe151edabd7/original.jpeg?width=640&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'mpp-katcha-golla',
-    name: 'Katcha Golla',
-    price: 14,
-    unit: 'per lb',
-    description: 'Soft, melt-in-the-mouth raw sweet made of fresh chenna and sugar.',
-    image: 'https://items-images-production-f.squarecdn.com/files/31d55e49fd7912d22b9914e99509e815420f3236/original.jpeg?width=640&crop=1%3A1&format=webp'
-  }
-];
+import { useCatalog } from '@/app/store/useCatalog';
 
 export default function MishtiPerPoundModal() {
   const {
@@ -135,6 +14,9 @@ export default function MishtiPerPoundModal() {
     closeMishtiPerPoundModal,
     addToCart,
   } = useCart();
+
+  const { products } = useCatalog();
+  const MISHTI_ITEMS = products.filter((p) => p.category === 'mishti-per-pound');
 
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
@@ -146,13 +28,13 @@ export default function MishtiPerPoundModal() {
     }));
   };
 
-  const handleAddToCart = (item: typeof MISHTI_ITEMS[0], quantity: number) => {
+  const handleAddToCart = (item: any, quantity: number) => {
     addToCart({
       productId: item.id,
       name: item.name,
       price: item.price,
       quantity,
-      image: item.image,
+      image: item.images[0] || '',
       unit: item.unit,
     });
     setQuantities((prev) => ({ ...prev, [item.id]: 1 }));
@@ -216,7 +98,7 @@ export default function MishtiPerPoundModal() {
                       <div>
                         <div className="relative aspect-square w-full">
                           <Image
-                            src={item.image}
+                            src={item.images[0] || ''}
                             alt={item.name}
                             fill
                             className="object-cover"

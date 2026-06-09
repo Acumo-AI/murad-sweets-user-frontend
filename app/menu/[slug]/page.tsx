@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, Plus, Minus, ShoppingCart, Info, AlertTriangle } from 'lucide-react';
-import { PRODUCTS } from '../../data/products';
+import { useCatalog } from '@/app/store/useCatalog';
 import { useCart } from '@/app/store/useCart';
 import ProductCard from '@/components/ProductCard';
 
@@ -14,7 +14,13 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const { addToCart, openMixMatch } = useCart();
   
+  const { products: PRODUCTS, fetchCatalog, isLoading } = useCatalog();
+  
   const slug = params.slug as string;
+
+  useEffect(() => {
+    fetchCatalog();
+  }, [fetchCatalog]);
 
   // Find the product by slug
   const product = PRODUCTS.find((p) => p.slug === slug);
@@ -34,6 +40,17 @@ export default function ProductDetailPage() {
       }
     }
   }, [product]);
+
+  if (isLoading) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-24 text-center space-y-4">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+        <p className="font-cinzel text-xs uppercase tracking-wider text-brown">
+          Loading Sweet Details...
+        </p>
+      </div>
+    );
+  }
 
   if (!product) {
     return (

@@ -6,29 +6,7 @@ import { useCart } from '@/app/store/useCart';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 
-const SPECIALTY_ITEMS = [
-  {
-    id: 'roshgulla-cake',
-    name: 'Roshgulla Cake',
-    price: 7,
-    description: '8oz cake',
-    image: 'https://items-images-production-f.squarecdn.com/files/31a02e7612b5bcec1b0d49a0f4c12b111093ddd2/original.jpeg?width=512&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'gulab-jamun',
-    name: 'Gulab Jamun',
-    price: 6,
-    description: '4pc box',
-    image: 'https://items-images-production-f.squarecdn.com/files/e165ec6df7b6a9094b2a46d22efc4d107061e1f8/original.jpeg?width=512&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'mishti-doi',
-    name: 'Mishti Doi',
-    price: 10,
-    description: '16oz box',
-    image: 'https://items-images-production-f.squarecdn.com/files/df9819ae66b601cb6a5dd06592526c8946e78e7f/original.jpeg?width=512&crop=1%3A1&format=webp'
-  }
-];
+import { useCatalog } from '@/app/store/useCatalog';
 
 export default function SpecialtyModal() {
   const {
@@ -36,6 +14,9 @@ export default function SpecialtyModal() {
     closeSpecialtyModal,
     addToCart,
   } = useCart();
+
+  const { products } = useCatalog();
+  const SPECIALTY_ITEMS = products.filter((p) => p.category === 'specialty');
 
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
@@ -47,14 +28,14 @@ export default function SpecialtyModal() {
     }));
   };
 
-  const handleAddToCart = (item: typeof SPECIALTY_ITEMS[0], quantity: number) => {
+  const handleAddToCart = (item: any, quantity: number) => {
     addToCart({
-      productId: `specialty-${item.id}`,
+      productId: item.id,
       name: item.name,
       price: item.price,
       quantity,
-      image: item.image,
-      unit: item.description,
+      image: item.images[0] || '',
+      unit: item.unit || item.description,
     });
     setQuantities((prev) => ({ ...prev, [item.id]: 1 }));
     closeSpecialtyModal();
@@ -117,7 +98,7 @@ export default function SpecialtyModal() {
                       <div>
                         <div className="relative aspect-square w-full">
                           <Image
-                            src={item.image}
+                            src={item.images[0] || ''}
                             alt={item.name}
                             fill
                             className="object-cover"
@@ -128,7 +109,7 @@ export default function SpecialtyModal() {
                           <h3 className="font-bold text-lg text-[#1A1A1A] font-heading">
                             {item.name}
                           </h3>
-                          <p className="text-gray-500 text-sm mt-1">{item.description}</p>
+                          <p className="text-gray-500 text-sm mt-1">{item.unit ? `${item.unit} • ` : ''}{item.description}</p>
                         </div>
                       </div>
                       <div className="p-5 pt-3">

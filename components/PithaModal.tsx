@@ -6,29 +6,7 @@ import { useCart } from '@/app/store/useCart';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 
-const PITHA_ITEMS = [
-  {
-    id: 'puli-pitha',
-    name: 'Puli Pitha',
-    price: 25,
-    description: '10pc box • Sweet half-moon dumplings filled with coconut and Khejur Gur (date molasses).',
-    image: 'https://items-images-production-f.squarecdn.com/files/8fbb667ff8b9e6808b5adfa6c48cdc69ffb33204/original.jpeg?width=512&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'nokshi-pitha',
-    name: 'Nokshi Pitha',
-    price: 30,
-    description: '10pc box • Intricately designed crispy rice cakes infused with warm date molasses syrup.',
-    image: 'https://items-images-production-f.squarecdn.com/files/7210719d85ecdc103efdd809ab6be9c6dc949160/original.png?width=512&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'patishapta-pitha',
-    name: 'Patishapta Pitha',
-    price: 30,
-    description: '10pc box • Delicate rice crepes rolled with a rich kheer (reduced milk) and coconut filling.',
-    image: 'https://items-images-production-f.squarecdn.com/files/036ad42f8b2e9574c99e5f27ef50dc1c7ed5c25f/original.jpeg?width=512&crop=1%3A1&format=webp'
-  }
-];
+import { useCatalog } from '@/app/store/useCatalog';
 
 export default function PithaModal() {
   const {
@@ -36,6 +14,9 @@ export default function PithaModal() {
     closePithaModal,
     addToCart,
   } = useCart();
+
+  const { products } = useCatalog();
+  const PITHA_ITEMS = products.filter((p) => p.category === 'pitha');
 
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
@@ -47,14 +28,14 @@ export default function PithaModal() {
     }));
   };
 
-  const handleAddToCart = (item: typeof PITHA_ITEMS[0], quantity: number) => {
+  const handleAddToCart = (item: any, quantity: number) => {
     addToCart({
-      productId: `pitha-${item.id}`,
+      productId: item.id,
       name: item.name,
       price: item.price,
       quantity,
-      image: item.image,
-      unit: '10pc box',
+      image: item.images[0] || '',
+      unit: item.unit || '10pc box',
     });
     setQuantities((prev) => ({ ...prev, [item.id]: 1 }));
     closePithaModal();
@@ -117,7 +98,7 @@ export default function PithaModal() {
                       <div>
                         <div className="relative aspect-square w-full">
                           <Image
-                            src={item.image}
+                            src={item.images[0] || ''}
                             alt={item.name}
                             fill
                             className="object-cover"
@@ -128,7 +109,7 @@ export default function PithaModal() {
                           <h3 className="font-bold text-lg text-[#1A1A1A] font-heading">
                             {item.name}
                           </h3>
-                          <p className="text-gray-500 text-sm mt-1">{item.description}</p>
+                          <p className="text-gray-500 text-sm mt-1">{item.unit ? `${item.unit} • ` : ''}{item.description}</p>
                         </div>
                       </div>
                       <div className="p-5 pt-3">

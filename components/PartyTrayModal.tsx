@@ -6,22 +6,7 @@ import { useCart } from '@/app/store/useCart';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 
-const PARTY_TRAY_OPTIONS = [
-  {
-    id: 'small',
-    name: 'Small Party Tray',
-    price: 30,
-    description: 'A beautiful arrangement of 15-18 assorted premium dry sweets, perfect for family get-togethers.',
-    image: 'https://items-images-production-f.squarecdn.com/files/78e849cba554ce2e5d5b5d8ad68a686db811ac04/original.jpeg?width=640&crop=1%3A1&format=webp'
-  },
-  {
-    id: 'large',
-    name: 'Large Party Tray',
-    price: 60,
-    description: 'A grand presentation tray with 35-40 pieces of our finest sweets, featuring an assortment of traditional mithai.',
-    image: 'https://items-images-production-f.squarecdn.com/files/da72ce861326317196b4aa8de5c09907e5b981c1/original.jpeg?width=512&crop=1%3A1&format=webp'
-  }
-];
+import { useCatalog } from '@/app/store/useCatalog';
 
 export default function PartyTrayModal() {
   const {
@@ -29,6 +14,9 @@ export default function PartyTrayModal() {
     closePartyTrayModal,
     addToCart,
   } = useCart();
+
+  const { products } = useCatalog();
+  const PARTY_TRAY_OPTIONS = products.filter((p) => p.category === 'party-trays');
 
   const [quantities, setQuantities] = useState<Record<string, number>>({});
 
@@ -40,14 +28,14 @@ export default function PartyTrayModal() {
     }));
   };
 
-  const handleAddToCart = (option: typeof PARTY_TRAY_OPTIONS[0], quantity: number) => {
+  const handleAddToCart = (option: any, quantity: number) => {
     addToCart({
-      productId: `party-tray-${option.id}`,
+      productId: option.id,
       name: option.name,
       price: option.price,
       quantity,
-      image: option.image,
-      unit: 'Tray',
+      image: option.images[0] || '',
+      unit: option.unit || 'Tray',
     });
     setQuantities((prev) => ({ ...prev, [option.id]: 1 }));
     closePartyTrayModal();
@@ -110,7 +98,7 @@ export default function PartyTrayModal() {
                       <div>
                         <div className="relative aspect-square w-full">
                           <Image
-                            src={option.image}
+                            src={option.images[0] || ''}
                             alt={option.name}
                             fill
                             className="object-cover"
@@ -121,7 +109,7 @@ export default function PartyTrayModal() {
                           <h3 className="font-bold text-lg text-[#1A1A1A] font-heading">
                             {option.name}
                           </h3>
-                          <p className="text-gray-500 text-sm mt-1">{option.description}</p>
+                          <p className="text-gray-500 text-sm mt-1">{option.unit ? `${option.unit} • ` : ''}{option.description}</p>
                         </div>
                       </div>
                       <div className="p-5 pt-3">

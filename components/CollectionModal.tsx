@@ -5,13 +5,13 @@ import { X, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/app/store/useCart';
 import {
-  PRODUCTS,
   ASSORTED_BOX_PRICES,
   SWEET_DISPLAY_META,
   COLLECTION_MODAL_COPY,
   type AssortedBoxSize,
   type Product,
 } from '@/app/data/products';
+import { useCatalog } from '@/app/store/useCatalog';
 
 import Image from 'next/image';
 
@@ -49,6 +49,8 @@ export default function CollectionModal() {
     addToast,
     collectionSize,
   } = useCart();
+
+  const { products: PRODUCTS } = useCatalog();
 
   const [boxSize, setBoxSize] = useState<AssortedBoxSize>(collectionSize ?? 3);
   const [boxPrice, setBoxPrice] = useState<number>(ASSORTED_BOX_PRICES[collectionSize ?? 3]);

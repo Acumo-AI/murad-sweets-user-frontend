@@ -4,9 +4,10 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Search, X, ShoppingBag, Plus, Minus, ShoppingCart } from 'lucide-react';
 import Image from 'next/image';
-import { PRODUCTS, Product } from '../data/products';
+import { Product } from '../data/products';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/app/store/useCart';
+import { useCatalog } from '@/app/store/useCatalog';
 
 // ─── Category pill definitions ────────────────────────────────────────────────
 const CATEGORY_PILLS: { id: string; label: string; filterKey: string | null }[] = [
@@ -294,43 +295,13 @@ function CatalogContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<string>('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  
   const { openCollectionModal } = useCart();
+  const { products: PRODUCTS, fetchCatalog, isLoading } = useCatalog();
 
-  const MIX_MATCH_BOXES: Product[] = [
-    {
-      id: 'mix-match-3',
-      slug: 'mix-match-3',
-      name: '3-Piece Mix & Match Box',
-      category: 'dry-sweets',
-      description: 'Build your custom assorted box with 3 of your favorite traditional sweets.',
-      price: 5,
-      unit: '3 pcs',
-      images: ['https://items-images-production-f.squarecdn.com/files/9ba888a143b397cf4ab2deda5c727d5bb80f8da9/original.jpeg?width=512&crop=1%3A1&format=webp'],
-      inStock: true,
-    },
-    {
-      id: 'mix-match-6',
-      slug: 'mix-match-6',
-      name: '6-Piece Mix & Match Box',
-      category: 'dry-sweets',
-      description: 'Build your custom assorted box with 6 of your favorite traditional sweets.',
-      price: 10,
-      unit: '6 pcs',
-      images: ['https://items-images-production-f.squarecdn.com/files/fc1de58a35a7f9872d30cbc5cd86239cda863980/original.jpeg?width=512&crop=1%3A1&format=webp'],
-      inStock: true,
-    },
-    {
-      id: 'mix-match-9',
-      slug: 'mix-match-9',
-      name: '9-Piece Mix & Match Box',
-      category: 'dry-sweets',
-      description: 'Build your custom assorted box with 9 of your favorite traditional sweets.',
-      price: 15,
-      unit: '9 pcs',
-      images: ['https://items-images-production-f.squarecdn.com/files/eac57c2d50106f70c33ea9f1caee98d15bf707e7/original.jpeg?width=512&crop=1%3A1&format=webp'],
-      inStock: true,
-    }
-  ];
+  useEffect(() => {
+    fetchCatalog();
+  }, [fetchCatalog]);
 
   // Sync from URL
   useEffect(() => {
@@ -352,25 +323,33 @@ function CatalogContent() {
   const activeFilterKey =
     CATEGORY_PILLS.find((p) => p.id === activeTab)?.filterKey ?? null;
 
-  const allProductsWithBoxes = [
-    ...PRODUCTS.filter((p) => p.category !== 'dry-sweets'),
-    ...MIX_MATCH_BOXES,
-  ];
-
-  const filteredProducts = allProductsWithBoxes.filter((product) => {
+  const filteredProducts = PRODUCTS.filter((product) => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase());
+      (product.description || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = !activeFilterKey || product.category === activeFilterKey;
-    return matchesSearch && matchesCategory;
+    const matchesType = product.product_type !== 'selection_item' && !product.slug.startsWith('assorted');
+    
+    return matchesSearch && matchesCategory && matchesType;
   });
 
   const handleProductClick = (product: Product) => {
-    if (product.id === 'mix-match-3') openCollectionModal('dry-sweets', 3);
-    else if (product.id === 'mix-match-6') openCollectionModal('dry-sweets', 6);
-    else if (product.id === 'mix-match-9') openCollectionModal('dry-sweets', 9);
+    if (product.slug === 'mixmatch-3') openCollectionModal('dry-sweets', 3);
+    else if (product.slug === 'mixmatch-6') openCollectionModal('dry-sweets', 6);
+    else if (product.slug === 'mixmatch-9') openCollectionModal('dry-sweets', 9);
     else setSelectedProduct(product);
   };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-16 text-center space-y-4">
+        <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+        <p className="font-cinzel text-xs uppercase tracking-wider text-brown">
+          Loading Sweet Catalog...
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>

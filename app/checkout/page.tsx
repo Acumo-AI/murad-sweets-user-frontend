@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Truck, MapPin, CreditCard, DollarSign, ArrowRight, ArrowLeft, ShoppingBag, Check } from 'lucide-react';
+import { Truck, MapPin, CreditCard, DollarSign, ArrowRight, ArrowLeft, ShoppingBag, Check, Loader2 } from 'lucide-react';
 import { useCart } from '@/app/store/useCart';
+import { getCartQuote, createOrder } from '@/app/lib/api';
 import Image from 'next/image';
 
 // Unified Validation Schema
@@ -63,11 +64,18 @@ export default function CheckoutPage() {
 
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [quote, setQuote] = useState<{
+    subtotal_cents: number;
+    delivery_fee_cents: number;
+    tax_cents: number;
+    total_cents: number;
+  } | null>(null);
+  const [isQuoting, setIsQuoting] = useState(false);
 
   // Subtotal details
-  const subtotal = getCartSubtotal();
-  const deliveryFee = getDeliveryFee();
-  const total = getCartTotal();
+  const subtotal = quote ? quote.subtotal_cents / 100 : getCartSubtotal();
+  const deliveryFee = quote ? quote.delivery_fee_cents / 100 : getDeliveryFee();
+  const total = quote ? quote.total_cents / 100 : getCartTotal();
 
   // Initialize Form with React Hook Form
   const {
@@ -100,7 +108,33 @@ export default function CheckoutPage() {
   });
 
   const watchedFulfillment = watch('fulfillment');
+  const watchedZip = watch('zip');
   const watchedPayment = watch('paymentMethod');
+
+  // get quote effect
+  useEffect(() => {
+    if (cartItems.length === 0) return;
+    
+    const fetchQuote = async () => {
+      setIsQuoting(true);
+      try {
+        const zip = watchedFulfillment === 'delivery' ? watchedZip : '';
+        const q = await getCartQuote(cartItems, watchedFulfillment, zip || '');
+        setQuote(q);
+      } catch (err) {
+        console.error('Failed to get quote', err);
+      } finally {
+        setIsQuoting(false);
+      }
+    };
+    
+    // debounce quote fetching
+    const timeout = setTimeout(() => {
+      fetchQuote();
+    }, 500);
+    
+    return () => clearTimeout(timeout);
+  }, [cartItems, watchedFulfillment, watchedZip]);
 
   // Tomorrow's date helper (ISO format)
   const getMinDate = () => {
@@ -136,47 +170,34 @@ export default function CheckoutPage() {
     setStep((prev) => prev - 1);
   };
 
-  // Form Submit (Final Place Order)
+  // Form Submit — delegates item serialisation to api.ts (toCartItemSchema)
+  // so the backend always receives the correct CartItemSchema shape.
   const onSubmit = async (data: CheckoutFormValues) => {
     setIsSubmitting(true);
-
-    // Simulate placing order
-    setTimeout(() => {
-      const orderId = `MS-${Math.floor(100000 + Math.random() * 900000)}`;
-
-      // Save order details to local storage so confirmation page can display them
-      const orderDetails = {
-        orderId,
-        items: cartItems,
-        subtotal,
-        deliveryFee,
-        total,
-        fulfillment: data.fulfillment,
-        address: data.fulfillment === 'delivery' ? {
-          street: data.street,
-          city: data.city,
-          state: data.state,
-          zip: data.zip
-        } : null,
-        scheduledDate: data.date,
-        scheduledSlot: data.slot,
-        contact: {
-          fullName: data.fullName,
-          email: data.email,
-          phone: data.phone,
-          notes: data.notes
-        },
-        paymentMethod: data.paymentMethod
-      };
-
-      localStorage.setItem('murad_sweets_last_order', JSON.stringify(orderDetails));
-
-      // Clear cart
+    try {
+      const res = await createOrder(cartItems, {
+        fulfillment:   data.fulfillment,
+        street:        data.street,
+        city:          data.city,
+        state:         data.state,
+        zip:           data.zip,
+        date:          data.date,
+        slot:          data.slot,
+        fullName:      data.fullName,
+        email:         data.email,
+        phone:         data.phone,
+        notes:         data.notes || '',
+        paymentMethod: data.paymentMethod,
+      });
+      console.log("Create Order Response:", res);
       clearCart();
-      setIsSubmitting(false);
       addToast('Order placed successfully!', 'success');
-      router.push(`/order-confirmation/${orderId}`);
-    }, 2000);
+      router.push(`/order-confirmation/${res?.order_number || res?.id || ''}`);
+    } catch (err: any) {
+      addToast(err.response?.data?.detail || 'Failed to place order. Please try again.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (cartItems.length === 0 && !isSubmitting) {
@@ -602,11 +623,16 @@ export default function CheckoutPage() {
 
         {/* Right Column: Order Summary Sidebar */}
         <div className="bg-cream/40 border border-border rounded-xl p-5 sm:p-6 space-y-4">
-          <h2 className="font-cinzel text-xs uppercase tracking-wider text-primary-deep font-bold border-b border-border pb-2.5">
-            Order Items
-          </h2>
+          <div className="flex items-center justify-between border-b border-border pb-2.5">
+            <h2 className="font-cinzel text-xs uppercase tracking-wider text-primary-deep font-bold">
+              Order Items
+            </h2>
+            {isQuoting && (
+              <Loader2 className="h-3.5 w-3.5 text-primary animate-spin" />
+            )}
+          </div>
 
-          <div className="divide-y divide-border/60 max-h-80 overflow-y-auto no-scrollbar">
+          <div className="divide-y divide-border/60 max-h-72 overflow-y-auto no-scrollbar">
             {cartItems.map((item) => (
               <div key={item.cartItemId} className="py-3 flex space-x-3 items-center justify-between text-xs">
                 <div className="min-w-0 pr-2">
@@ -629,15 +655,24 @@ export default function CheckoutPage() {
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-brown">Fulfillment ({watchedFulfillment})</span>
+              <span className="text-brown">Delivery fee</span>
               <span className="font-cinzel font-bold text-primary-deep capitalize">
                 {watchedFulfillment === 'delivery' ? `$${deliveryFee.toFixed(2)}` : 'Free'}
               </span>
             </div>
 
+            {quote && (
+              <div className="flex justify-between items-center">
+                <span className="text-brown">Tax</span>
+                <span className="font-cinzel font-bold text-primary-deep">${(quote.tax_cents / 100).toFixed(2)}</span>
+              </div>
+            )}
+
             <div className="flex justify-between items-center border-t border-border pt-3">
               <span className="font-cinzel font-bold text-primary-deep">Grand Total</span>
-              <span className="font-cinzel text-base text-primary font-bold">${total.toFixed(2)}</span>
+              <span className="font-cinzel text-base text-primary font-bold">
+                {isQuoting ? '—' : `$${total.toFixed(2)}`}
+              </span>
             </div>
           </div>
         </div>

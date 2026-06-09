@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Phone, MapPin, Clock, MessageCircle, Send, Check } from 'lucide-react';
 import { useCart } from '@/app/store/useCart';
+import { submitInquiry } from '@/app/lib/api';
 
 const FacebookIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -22,8 +23,9 @@ const InstagramIcon = ({ className }: { className?: string }) => (
 );
 
 const contactSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
+  fullName: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
+  phone: z.string().min(7, 'Please enter a valid phone number'),
   message: z.string().min(10, 'Message must be at least 10 characters'),
 });
 
@@ -44,21 +46,24 @@ export default function ContactPage() {
     mode: 'all',
   });
 
-  const onSubmit = (data: ContactFormValues) => {
+  const onSubmit = async (data: ContactFormValues) => {
     setIsSubmitting(true);
-    
-    // Simulate sending inquiry
-    setTimeout(() => {
+    try {
+      await submitInquiry({
+        fullName: data.fullName,
+        email:    data.email,
+        phone:    data.phone,
+        message:  data.message,
+      });
       setIsSubmitting(false);
       setIsSuccess(true);
       addToast('Message sent successfully! We will get back to you shortly.', 'success');
       reset();
-      
-      // Reset success state after 5 seconds
-      setTimeout(() => {
-        setIsSuccess(false);
-      }, 5000);
-    }, 1500);
+      setTimeout(() => { setIsSuccess(false); }, 5000);
+    } catch (err: any) {
+      setIsSubmitting(false);
+      addToast(err.response?.data?.detail || 'Failed to send message. Please try again.', 'error');
+    }
   };
 
   return (
@@ -88,11 +93,11 @@ export default function ContactPage() {
               <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1.5">Your Name</label>
               <input
                 type="text"
-                {...register('name')}
+                {...register('fullName')}
                 className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep placeholder-brown/30 focus:outline-none focus:ring-1 focus:ring-primary"
                 placeholder="Rahim Ahmed"
               />
-              {errors.name && <span className="text-[10px] text-red-600 block mt-1">{errors.name.message}</span>}
+              {errors.fullName && <span className="text-[10px] text-red-600 block mt-1">{errors.fullName.message}</span>}
             </div>
 
             <div>
@@ -104,6 +109,17 @@ export default function ContactPage() {
                 placeholder="rahim@example.com"
               />
               {errors.email && <span className="text-[10px] text-red-600 block mt-1">{errors.email.message}</span>}
+            </div>
+
+            <div>
+              <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1.5">Phone Number</label>
+              <input
+                type="tel"
+                {...register('phone')}
+                className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep placeholder-brown/30 focus:outline-none"
+                placeholder="(555) 123-4567"
+              />
+              {errors.phone && <span className="text-[10px] text-red-600 block mt-1">{errors.phone.message}</span>}
             </div>
 
             <div>

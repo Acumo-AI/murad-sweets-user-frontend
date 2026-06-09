@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { X, Plus, Minus, Check } from 'lucide-react';
 import { useCart } from '@/app/store/useCart';
-import { PRODUCTS, MIX_MATCH_PRICES } from '@/app/data/products';
+import { MIX_MATCH_PRICES } from '@/app/data/products';
+import { useCatalog } from '@/app/store/useCatalog';
 import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 
@@ -15,6 +16,7 @@ const BOX_IMAGES = {
 
 export default function MixMatchModal() {
   const { isMixMatchOpen, mixMatchProduct, closeMixMatch, addToCart } = useCart();
+  const { products: PRODUCTS } = useCatalog();
 
   const [boxSize, setBoxSize] = useState<3 | 6 | 9>(3);
   const [selections, setSelections] = useState<{ [productId: string]: number }>({});
