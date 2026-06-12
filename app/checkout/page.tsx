@@ -114,7 +114,7 @@ export default function CheckoutPage() {
   // get quote effect
   useEffect(() => {
     if (cartItems.length === 0) return;
-    
+
     const fetchQuote = async () => {
       setIsQuoting(true);
       try {
@@ -127,12 +127,12 @@ export default function CheckoutPage() {
         setIsQuoting(false);
       }
     };
-    
+
     // debounce quote fetching
     const timeout = setTimeout(() => {
       fetchQuote();
     }, 500);
-    
+
     return () => clearTimeout(timeout);
   }, [cartItems, watchedFulfillment, watchedZip]);
 
@@ -176,17 +176,17 @@ export default function CheckoutPage() {
     setIsSubmitting(true);
     try {
       const res = await createOrder(cartItems, {
-        fulfillment:   data.fulfillment,
-        street:        data.street,
-        city:          data.city,
-        state:         data.state,
-        zip:           data.zip,
-        date:          data.date,
-        slot:          data.slot,
-        fullName:      data.fullName,
-        email:         data.email,
-        phone:         data.phone,
-        notes:         data.notes || '',
+        fulfillment: data.fulfillment,
+        street: data.street,
+        city: data.city,
+        state: data.state,
+        zip: data.zip,
+        date: data.date,
+        slot: data.slot,
+        fullName: data.fullName,
+        email: data.email,
+        phone: data.phone,
+        notes: data.notes || '',
         paymentMethod: data.paymentMethod,
       });
       console.log("Create Order Response:", res);
@@ -241,10 +241,10 @@ export default function CheckoutPage() {
               <div key={s.stepNum} className="flex flex-col items-center space-y-2">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center font-cinzel text-xs font-bold border-2 transition-all duration-300 ${isCompleted
-                      ? 'bg-primary border-primary text-white'
-                      : isActive
-                        ? 'bg-cream border-primary text-primary'
-                        : 'bg-white border-border text-brown'
+                    ? 'bg-primary border-primary text-white'
+                    : isActive
+                      ? 'bg-cream border-primary text-primary'
+                      : 'bg-white border-border text-brown'
                     }`}
                 >
                   {isCompleted ? <Check className="h-4 w-4" /> : s.stepNum}
@@ -279,8 +279,8 @@ export default function CheckoutPage() {
                       setFulfillmentType('pickup');
                     }}
                     className={`py-3 text-xs font-cinzel uppercase font-semibold rounded-md flex items-center justify-center space-x-2 transition-all ${watchedFulfillment === 'pickup'
-                        ? 'bg-primary text-cream shadow-sm'
-                        : 'text-primary hover:bg-cream/70'
+                      ? 'bg-primary text-cream shadow-sm'
+                      : 'text-primary hover:bg-cream/70'
                       }`}
                   >
                     <MapPin className="h-4 w-4" />
@@ -293,8 +293,8 @@ export default function CheckoutPage() {
                       setFulfillmentType('delivery');
                     }}
                     className={`py-3 text-xs font-cinzel uppercase font-semibold rounded-md flex items-center justify-center space-x-2 transition-all ${watchedFulfillment === 'delivery'
-                        ? 'bg-primary text-cream shadow-sm'
-                        : 'text-primary hover:bg-cream/70'
+                      ? 'bg-primary text-cream shadow-sm'
+                      : 'text-primary hover:bg-cream/70'
                       }`}
                   >
                     <Truck className="h-4 w-4" />
@@ -362,7 +362,7 @@ export default function CheckoutPage() {
                       <span>Pickup Address</span>
                     </h3>
                     <p className="text-xs text-primary-deep leading-relaxed font-body">
-                      Murad Sweets Kitchen: **Brooklyn, NY 11218** <br />
+                      Murad Sweets Kitchen: **Houston, Texas 77055** <br />
                       Pickup is completely contact-free. The exact house address and detailed collection instructions will be shared in your confirmation email and SMS once we review the order schedule.
                     </p>
                   </div>
@@ -469,8 +469,8 @@ export default function CheckoutPage() {
                     type="button"
                     onClick={() => setValue('paymentMethod', 'cod')}
                     className={`py-3 text-xs font-cinzel uppercase font-semibold rounded-md flex items-center justify-center space-x-2 transition-all ${watchedPayment === 'cod'
-                        ? 'bg-primary text-cream shadow-sm'
-                        : 'text-primary hover:bg-cream/70'
+                      ? 'bg-primary text-cream shadow-sm'
+                      : 'text-primary hover:bg-cream/70'
                       }`}
                   >
                     <DollarSign className="h-4 w-4" />
@@ -480,8 +480,8 @@ export default function CheckoutPage() {
                     type="button"
                     onClick={() => setValue('paymentMethod', 'card')}
                     className={`py-3 text-xs font-cinzel uppercase font-semibold rounded-md flex items-center justify-center space-x-2 transition-all ${watchedPayment === 'card'
-                        ? 'bg-primary text-cream shadow-sm'
-                        : 'text-primary hover:bg-cream/70'
+                      ? 'bg-primary text-cream shadow-sm'
+                      : 'text-primary hover:bg-cream/70'
                       }`}
                   >
                     <CreditCard className="h-4 w-4" />

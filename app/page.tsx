@@ -14,14 +14,15 @@ export default function Home() {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="/HeroSectionImage.png"
+            src="/HeroSectionImageVersion2.png"
+
             alt="Murad Sweets Background"
             fill
             priority
             className="hidden sm:block object-cover object-center"
           />
           <Image
-            src="/HeroSectionImagePhone.png"
+            src="/HeroSectionPhoneViewVersion3.png"
             alt="Murad Sweets Background Mobile"
             fill
             priority
@@ -82,9 +83,7 @@ export default function Home() {
                 <span>Order Now</span>
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Link>
-              <Link href="/menu" className="w-full sm:w-auto px-8 py-3.5 text-xs uppercase tracking-widest text-primary-deep font-subheading border border-primary-deep hover:bg-primary-deep hover:text-cream transition-all duration-300 flex items-center justify-center rounded-md">
-                Explore Sweets
-              </Link>
+
             </motion.div>
           </div>
         </div>
@@ -137,7 +136,7 @@ export default function Home() {
                 <h3 className="font-cinzel text-base tracking-wider uppercase font-semibold">Contactless Pickup</h3>
               </div>
               <p className="text-xs sm:text-sm text-primary-deep font-body leading-relaxed">
-                Skip the delivery fee and collect directly from our home-based kitchen in **Brooklyn, NY 11218**. Pickups are available Friday through Sunday, 10:00 AM – 8:00 PM.
+                Skip the delivery fee and collect directly from our home-based kitchen in **Houston, Texas 77055**. Pickups are available Friday through Sunday, 10:00 AM – 8:00 PM.
               </p>
               <div className="text-xs text-brown">
                 <span className="font-bold">Pickup Instructions:</span> Provided via email and text message once order is approved.
@@ -160,18 +159,18 @@ export default function Home() {
           {[
             {
               stars: 5,
-              text: "The Kalojam sandwich is pure perfection! The malai filling is rich and not overly sweet, just like the elite mithai shops in Dhaka. I order a custom box every Eid.",
-              name: "Nusrat"
+              text: "By far the BEST Bangladeshi sweets I ever had in Houston. The flavor, texture, juiciness it’s perfectly done. The price is very reasonable as well. They also do fancy packaging and platter for parties. Look no further just go support this small business. 10/10 all the way!!!!",
+              name: "Nowrin B Amin"
             },
             {
               stars: 5,
-              text: "I was skeptical about finding authentic pitha in New York, but Murad Sweets nailed the Patishapta. The crepes were soft, and the kheer filling was deeply flavorful. Highly recommended!",
-              name: "Tanvir"
+              text: "Their desserts are top tier!! Been searching for the best place to try Bengali desserts in Houston and they’ve definitely earned that title! Must give them a try, definitely recommend",
+              name: "Sham"
             },
             {
               stars: 5,
-              text: "Amazing Rasmalai Cake! It was the star of my daughter's birthday. Perfect blend of a modern cake and traditional South Asian flavors. Order was ready right on time for pickup.",
-              name: "Sultana"
+              text: "Has a wide selection of homemade Bangladeshi sweets that are fresh and delicious. I especially enjoyed the Kalojam sandwich.",
+              name: "Samara Hossain"
             }
           ].map((item, idx) => (
             <div key={idx} className="bg-white p-6 rounded-xl border border-border shadow-sm flex flex-col justify-between space-y-4">

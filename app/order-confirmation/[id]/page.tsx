@@ -145,7 +145,7 @@ export default function OrderConfirmationPage() {
                   </span>
                 )}
                 {!isDelivery && (
-                  <span className="text-brown block mt-0.5">Brooklyn, NY 11218 – exact address in confirmation email.</span>
+                  <span className="text-brown block mt-0.5">Houston, Texas 77055 – exact address in confirmation email.</span>
                 )}
               </div>
             </div>

@@ -6,39 +6,93 @@ import type { Product } from '@/app/data/products';
 
 const items = [
   {
-    id: 'dry-sweets',
-    title: 'Mix & Match Boxes',
-    description: 'Build your own perfect box with your favorite mithai - from rich barfis to nutty delights.',
+    id: 'brown-chom-chom',
+    title: 'Brown Chom Chom',
+    description: 'A classic rich and caramelized Bengali sweet, deeply satisfying and soaked in sweet syrup.',
     features: [],
     iconImage: '/Icons/IconRowTwo.png',
-    image: '/MithayiBox1.png',
+    image: '/BrownChomChom.webp',
     type: 'image-row'
   },
   {
-    id: 'party-trays',
-    title: 'Party Trays',
-    description: 'Beautifully arranged trays for weddings, gatherings and celebrations. Made to impress.',
+    id: 'white-chom-chom',
+    title: 'White Chom Chom',
+    description: 'Soft, spongy, and delicately sweet, these traditional white treats are a timeless favorite.',
     features: [],
     iconImage: '/Icons/IconRowThree.png',
-    image: '/MithayiBox2.png',
+    image: '/WhiteChomChom.webp',
     type: 'image-row'
   },
   {
-    id: 'specialty',
-    title: 'Specialty Items',
-    description: 'Indulge in our rich and premium specialty sweets made for true sweet lovers.',
+    id: 'kalojam',
+    title: 'KaloJam',
+    description: 'Deep-fried to a beautiful dark color, our KaloJam offers a rich, dense texture bursting with flavor.',
     features: [],
     iconImage: '/Icons/IconRow4.png',
-    image: '/MithayiBox3.png',
+    image: '/KaloJam.webp',
     type: 'image-row'
   },
   {
-    id: 'pitha',
-    title: 'Traditional Pitha',
-    description: 'A taste of heritage. Traditional Bangladeshi pitha made the authentic way, just like home.',
+    id: 'rajbhog',
+    title: 'RajBhog',
+    description: 'A majestic, saffron-infused spongy sweet filled with premium nuts and cardamom.',
     features: [],
     iconImage: '/Icons/IconRowOne.png',
-    image: '/MithayiBox4.png',
+    image: '/RajBhog.webp',
+    type: 'image-row'
+  },
+  {
+    id: 'kala-jamun-sandwich',
+    title: 'Kala Jamun Sandwich',
+    description: 'An elegant presentation of classic Kala Jamun, beautifully layered with rich malai cream.',
+    features: [],
+    iconImage: '/Icons/IconRowTwo.png',
+    image: '/KalujamSandwich.webp',
+    type: 'image-row'
+  },
+  {
+    id: 'laddu',
+    title: 'Laddu',
+    description: 'Perfectly round and irresistibly sweet, our laddus melt in your mouth with every bite.',
+    features: [],
+    iconImage: '/Icons/IconRowThree.png',
+    image: '/Laddu.webp',
+    type: 'image-row'
+  },
+  {
+    id: 'katari-bhog',
+    title: 'Katari Bhog',
+    description: 'A premium regional delicacy known for its unique texture and authentic, rich taste.',
+    features: [],
+    iconImage: '/Icons/IconRow4.png',
+    image: '/KatariBhog.webp',
+    type: 'image-row'
+  },
+  {
+    id: 'malai-kari',
+    title: 'MalaiKari',
+    description: 'Luxuriously soft sweets drenched in a thickened, sweetened milk infused with cardamom.',
+    features: [],
+    iconImage: '/Icons/IconRowOne.png',
+    image: '/MalaiKari.webp',
+    type: 'image-row'
+  },
+  {
+    id: 'shandesh',
+    title: 'Shandesh',
+    description: 'A delicate milk-based sweet, perfectly balanced and adorned with a touch of tradition.',
+    features: [],
+    iconImage: '/Icons/IconRowTwo.png',
+    image: '/Shandesh.webp',
+    type: 'image-row'
+  },
+  {
+    id: 'gulab-jamun',
+    title: 'Gulab Jamun',
+    description: 'Golden, soft, and warm, soaking in a fragrant rose and cardamom syrup.',
+    features: [],
+    iconImage: '/Icons/IconRowThree.png',
+    image: '/GulabJamun.webp',
     type: 'image-row'
   }
 ];
@@ -123,18 +177,7 @@ function FeatureList({ type, iconImage }: { type: string; features: string[]; ic
 export default function CategoryShowcase() {
   const { openCollectionModal, openPartyTrayModal, openSpecialtyModal, openPithaModal, openMishtiPerPoundModal } = useCart();
 
-  const showcaseItems = [
-    ...items,
-    {
-      id: 'mishti-per-pound',
-      title: 'Mishti Per Pound',
-      description: 'Purchase your favorite traditional sweets by the pound or dozen. Handcrafted fresh daily.',
-      features: [],
-      iconImage: '/Icons/IconRowTwo.png',
-      image: '/mishtiperpound.png',
-      type: 'image-row'
-    }
-  ];
+  const showcaseItems = items;
 
   return (
     <section className="bg-[#4A0F17] pt-20 overflow-hidden">
@@ -183,21 +226,11 @@ export default function CategoryShowcase() {
                   <button
                     type="button"
                     onClick={() => {
-                      if (item.id === 'party-trays') {
-                        openPartyTrayModal();
-                      } else if (item.id === 'specialty') {
-                        openSpecialtyModal();
-                      } else if (item.id === 'pitha') {
-                        openPithaModal();
-                      } else if (item.id === 'mishti-per-pound') {
-                        openMishtiPerPoundModal();
-                      } else {
-                        openCollectionModal(item.id as Product['category']);
-                      }
+                      openMishtiPerPoundModal();
                     }}
                     className="inline-flex items-center justify-center gap-1 sm:gap-3 bg-[#681628] text-white px-3 py-1.5 sm:px-8 sm:py-3.5 rounded hover:bg-[#541523] transition-colors font-semibold tracking-wide text-[9px] sm:text-sm md:text-base w-fit shadow-md hover:shadow-lg"
                   >
-                    Explore Collection
+                    Order Now
                     <span>→</span>
                   </button>
                 </div>

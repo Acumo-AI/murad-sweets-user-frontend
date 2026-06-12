@@ -10,15 +10,15 @@ import { submitInquiry } from '@/app/lib/api';
 
 const FacebookIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/>
+    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
   </svg>
 );
 
 const InstagramIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
-    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
-    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
   </svg>
 );
 
@@ -51,9 +51,9 @@ export default function ContactPage() {
     try {
       await submitInquiry({
         fullName: data.fullName,
-        email:    data.email,
-        phone:    data.phone,
-        message:  data.message,
+        email: data.email,
+        phone: data.phone,
+        message: data.message,
       });
       setIsSubmitting(false);
       setIsSuccess(true);
@@ -136,9 +136,8 @@ export default function ContactPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full py-3 text-xs uppercase tracking-widest font-semibold flex items-center justify-center space-x-2 ${
-                isSubmitting ? 'opacity-55 cursor-not-allowed' : 'btn-gold shadow-md'
-              }`}
+              className={`w-full py-3 text-xs uppercase tracking-widest font-semibold flex items-center justify-center space-x-2 ${isSubmitting ? 'opacity-55 cursor-not-allowed' : 'btn-gold shadow-md'
+                }`}
             >
               {isSuccess ? (
                 <>
@@ -178,7 +177,7 @@ export default function ContactPage() {
                 <MapPin className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold text-primary-deep uppercase font-cinzel text-[10px] tracking-wider block">Pickup Hub</span>
-                  <span className="text-primary-deep font-semibold">Brooklyn, NY 11218</span>
+                  <span className="text-primary-deep font-semibold">Houston, Texas 77055</span>
                   <span className="text-[10px] text-brown block mt-0.5">Exact address shared in order receipt details.</span>
                 </div>
               </div>
