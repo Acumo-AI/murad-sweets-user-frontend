@@ -60,7 +60,12 @@ export default function CollectionModal() {
   const copy = COLLECTION_MODAL_COPY[category];
 
   const availableSweets = PRODUCTS.filter(
-    (p) => p.category === category && p.inStock
+    (p) => 
+      p.category === category && 
+      p.inStock && 
+      p.product_type !== 'custom_box' && 
+      !p.name.toLowerCase().includes('assorted') && 
+      !p.name.toLowerCase().includes('mix & match')
   );
 
   const resetBuilder = useCallback(() => {
@@ -105,7 +110,7 @@ export default function CollectionModal() {
     const itemName = `Assorted Custom ${boxSize}-Pack Box (${sweetNames})`;
 
     addToCart({
-      productId: `assorted-${boxSize}-${Date.now()}`,
+      productId: `mixmatch-${boxSize}`,
       name: itemName,
       price: boxPrice,
       quantity: 1,

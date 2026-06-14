@@ -498,7 +498,7 @@ export default function CheckoutPage() {
                         <span>Stripe Secured Card Information</span>
                       </span>
                       <Image
-                        src="https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=100&auto=format&fit=crop&q=60"
+                        src="/murad-logo.jpg"
                         alt="Stripe logo placeholder"
                         width={60}
                         height={20}

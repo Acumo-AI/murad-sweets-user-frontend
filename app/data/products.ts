@@ -22,7 +22,7 @@ export const PRODUCTS: Product[] = [
     category: 'dry-sweets',
     description: 'Traditional deep-fried milk-solid dumplings soaked in cardamom-infused sugar syrup, featuring a dark, caramelized outer layer.',
     price: 0,
-    images: ['https://items-images-production-f.squarecdn.com/files/ef1d699f951f2db300ae859cc6b39897c79095b8/original.jpeg?width=128&crop=1%3A1&format=webp'],
+    images: ['/KaloJam.webp'],
     inStock: true,
     isMixMatch: true
   },
@@ -33,7 +33,7 @@ export const PRODUCTS: Product[] = [
     category: 'dry-sweets',
     description: 'Classic Bangladeshi oval-shaped sweet made of dense chenna (curdled milk), slowly cooked to a rich mahogany brown color.',
     price: 0,
-    images: ['https://items-images-production-f.squarecdn.com/files/0a1baff12638918784fd42eec0e02233c57874f2/original.jpeg?width=128&crop=1%3A1&format=webp'],
+    images: ['/BrownChomChom.webp'],
     inStock: true,
     isMixMatch: true
   },
@@ -44,7 +44,7 @@ export const PRODUCTS: Product[] = [
     category: 'dry-sweets',
     description: 'Delicate, ivory-white chom chom made of soft chenna, simmered in light sugar syrup, offering a moist texture.',
     price: 0,
-    images: ['https://items-images-production-f.squarecdn.com/files/85c894a2cdfa49fc91468a6ed389376d7bd901e1/original.png?width=128&crop=1%3A1&format=webp'],
+    images: ['/WhiteChomChom.webp'],
     inStock: true,
     isMixMatch: true
   },
@@ -55,7 +55,7 @@ export const PRODUCTS: Product[] = [
     category: 'dry-sweets',
     description: 'An elegant variation of Kalojam, sliced open and filled with a thick layer of sweetened cream (malai).',
     price: 0,
-    images: ['https://items-images-production-f.squarecdn.com/files/1e4a710e5852bebb0ec3993ac604e4dd9dedf4c5/original.jpeg?width=128&crop=1%3A1&format=webp'],
+    images: ['/KalujamSandwich.webp'],
     inStock: true,
     isMixMatch: true
   },
@@ -66,7 +66,7 @@ export const PRODUCTS: Product[] = [
     category: 'dry-sweets',
     description: 'A honeycomb-shaped royal delight made with chenna, soaked in saffron syrup, and covered with creamy kheer.',
     price: 0,
-    images: ['https://items-images-production-f.squarecdn.com/files/6b5ab94ac6f70f24feba421fb318ef7c9efa9917/original.jpeg?width=128&crop=1%3A1&format=webp'],
+    images: ['/KheerMouchak.webp'],
     inStock: true,
     isMixMatch: true
   },
@@ -77,7 +77,7 @@ export const PRODUCTS: Product[] = [
     category: 'dry-sweets',
     description: 'Plump chenna rounds cooked in syrup and then coated with a luscious, rich saffron malai reduction.',
     price: 0,
-    images: ['https://items-images-production-f.squarecdn.com/files/b1197d7095486976b4b572dbd02f821bfdbca151/original.jpeg?width=128&crop=1%3A1&format=webp'],
+    images: ['/MalaiKari.webp'],
     inStock: true,
     isMixMatch: true
   },
@@ -88,7 +88,7 @@ export const PRODUCTS: Product[] = [
     category: 'dry-sweets',
     description: 'Grand-sized chenna spheres stuffed with dry fruits, simmered in a fragrant saffron and cardamom syrup.',
     price: 0,
-    images: ['https://items-images-production-f.squarecdn.com/files/95c97a84a6f3b0265c89796fe61e83547fc30bbd/original.jpeg?width=128&crop=1%3A1&format=webp'],
+    images: ['/RajBhog.webp'],
     inStock: true,
     isMixMatch: true
   },
@@ -99,7 +99,7 @@ export const PRODUCTS: Product[] = [
     category: 'dry-sweets',
     description: 'An artisanal Bangladeshi sweet consisting of small chenna balls cooked in premium date jaggery syrup.',
     price: 0,
-    images: ['https://items-images-production-f.squarecdn.com/files/5f2e1c7cf8e32ecc2c4dec89d5b0add8c62faa72/original.jpeg?width=128&crop=1%3A1&format=webp'],
+    images: ['/KatariBhog.webp'],
     inStock: true,
     isMixMatch: true
   },
@@ -110,7 +110,7 @@ export const PRODUCTS: Product[] = [
     category: 'dry-sweets',
     description: 'Aromatic Motichoor Laddus made from tiny chickpea flour globules fried in pure ghee.',
     price: 0,
-    images: ['https://items-images-production-f.squarecdn.com/files/3894a89462eb13d67a7d65a15bed28c891501566/original.jpeg?width=128&crop=1%3A1&format=webp'],
+    images: ['/Laddu.webp'],
     inStock: true,
     isMixMatch: true
   },
@@ -121,7 +121,7 @@ export const PRODUCTS: Product[] = [
     category: 'dry-sweets',
     description: 'Traditional dry sweet made from fresh paneer and date molasses (Nolen Gur).',
     price: 0,
-    images: ['https://items-images-production-f.squarecdn.com/files/c3fd77de3125fbebfaf08a34328df9718f044cf9/original.jpeg?width=128&crop=1%3A1&format=webp'],
+    images: ['/Shandesh.webp'],
     inStock: true,
     isMixMatch: true
   },
@@ -143,7 +143,7 @@ export const PRODUCTS: Product[] = [
     category: 'dry-sweets',
     description: 'Rich, semi-soft sweet made of condensed milk, sugar, and traditional flavorings.',
     price: 0,
-    images: ['https://items-images-production-f.squarecdn.com/files/5959be5a1eecc7bcef1982dcc39a1fe151edabd7/original.jpeg?width=128&crop=1%3A1&format=webp'],
+    images: ['/Peda.webp'],
     inStock: true,
     isMixMatch: true
   },
@@ -166,7 +166,7 @@ export const PRODUCTS: Product[] = [
     description: 'Soft, golden-brown dumplings made of milk solids, deep-fried and soaked in a warm, fragrant sugar syrup with rosewater and cardamom.',
     price: 6,
     unit: 'per box (4pc)',
-    images: ['/gulab-jamun.png'],
+    images: ['/GulabJamun.webp'],
     inStock: true
   },
   {
@@ -188,7 +188,7 @@ export const PRODUCTS: Product[] = [
     description: 'A beautiful arrangement of 15-18 assorted premium dry sweets, perfect for family get-togethers and intimate celebrations.',
     price: 30,
     unit: 'per tray (~18 pcs)',
-    images: ['https://images.unsplash.com/photo-1601356616077-695728ecf769?w=600&auto=format&fit=crop&q=80'],
+    images: ['/SmallPartyTray.webp'],
     inStock: true
   },
   {
@@ -199,7 +199,7 @@ export const PRODUCTS: Product[] = [
     description: 'A grand presentation tray with 35-40 pieces of our finest sweets, featuring an assortment of chom chom, kalojam, shandesh, and laddus.',
     price: 60,
     unit: 'per tray (~40 pcs)',
-    images: ['https://images.unsplash.com/photo-1601356616077-695728ecf769?w=600&auto=format&fit=crop&q=80'],
+    images: ['/LargePartyTray.webp'],
     inStock: true
   },
   {
@@ -212,7 +212,7 @@ export const PRODUCTS: Product[] = [
     unit: 'per pc',
     preOrderOnly: true,
     minOrderQty: 10,
-    images: ['https://images.unsplash.com/photo-1519676867240-f03562e64548?w=600&auto=format&fit=crop&q=80'],
+    images: ['/murad-logo.jpg'],
     inStock: true
   },
   {
@@ -225,7 +225,7 @@ export const PRODUCTS: Product[] = [
     unit: 'per pc',
     preOrderOnly: true,
     minOrderQty: 10,
-    images: ['https://images.unsplash.com/photo-1519676867240-f03562e64548?w=600&auto=format&fit=crop&q=80'],
+    images: ['/murad-logo.jpg'],
     inStock: true
   },
   {
@@ -238,7 +238,7 @@ export const PRODUCTS: Product[] = [
     unit: 'per pc',
     preOrderOnly: true,
     minOrderQty: 10,
-    images: ['https://images.unsplash.com/photo-1587314168485-3236d6710814?w=600&auto=format&fit=crop&q=80'],
+    images: ['/murad-logo.jpg'],
     inStock: true
   },
   {

@@ -11,13 +11,12 @@ import { useCatalog } from '@/app/store/useCatalog';
 
 // ─── Category pill definitions ────────────────────────────────────────────────
 const CATEGORY_PILLS: { id: string; label: string; filterKey: string | null }[] = [
-  { id: 'all',              label: 'All',               filterKey: null },
-  { id: 'dry-sweets',       label: 'Mix & Match',       filterKey: 'dry-sweets' },
-  { id: 'party-trays',      label: 'Party Trays',       filterKey: 'party-trays' },
-  { id: 'specialty',        label: 'Specialty Items',   filterKey: 'specialty' },
-  { id: 'pitha',            label: 'Traditional Pitha', filterKey: 'pitha' },
-  { id: 'mishti-per-pound', label: 'Mishti Per Pound',  filterKey: 'mishti-per-pound' },
-  { id: 'single',           label: 'Single',            filterKey: 'specialty' },
+  { id: 'all', label: 'All', filterKey: null },
+  { id: 'dry-sweets', label: 'Mix & Match', filterKey: 'dry-sweets' },
+  { id: 'party-trays', label: 'Party Trays', filterKey: 'party-trays' },
+  { id: 'specialty', label: 'Specialty Items', filterKey: 'specialty' },
+  { id: 'pitha', label: 'Traditional Pitha', filterKey: 'pitha' },
+  { id: 'mishti-per-pound', label: 'Mishti Per Pound', filterKey: 'mishti-per-pound' },
 ];
 
 // ─── Product Quick Modal ──────────────────────────────────────────────────────
@@ -162,13 +161,12 @@ function ProductQuickModal({
             <button
               onClick={handleAdd}
               disabled={!product.inStock || isFree}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs uppercase tracking-widest font-cinzel font-bold rounded-lg transition-all duration-200 ${
-                added
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-xs uppercase tracking-widest font-cinzel font-bold rounded-lg transition-all duration-200 ${added
                   ? 'bg-green-600 text-white'
                   : !product.inStock || isFree
-                  ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                  : 'btn-gold text-primary-deep'
-              }`}
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'btn-gold text-primary-deep'
+                }`}
             >
               {added ? (
                 <>Added ✓</>
@@ -214,9 +212,8 @@ function MenuProductCard({
     <button
       type="button"
       onClick={() => onClick(product)}
-      className={`group relative premium-card flex flex-col h-full overflow-hidden w-full text-left transition-transform duration-200 hover:-translate-y-0.5 ${
-        !product.inStock ? 'opacity-70' : ''
-      }`}
+      className={`group relative premium-card flex flex-col h-full overflow-hidden w-full text-left transition-transform duration-200 hover:-translate-y-0.5 ${!product.inStock ? 'opacity-70' : ''
+        }`}
     >
       {/* Image */}
       <div className="aspect-square w-full relative bg-blush overflow-hidden">
@@ -295,7 +292,7 @@ function CatalogContent() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<string>('all');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  
+
   const { openCollectionModal } = useCart();
   const { products: PRODUCTS, fetchCatalog, isLoading } = useCatalog();
 
@@ -329,7 +326,7 @@ function CatalogContent() {
       (product.description || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = !activeFilterKey || product.category === activeFilterKey;
     const matchesType = product.product_type !== 'selection_item' && !product.slug.startsWith('assorted');
-    
+
     return matchesSearch && matchesCategory && matchesType;
   });
 
@@ -393,11 +390,10 @@ function CatalogContent() {
               <button
                 key={pill.id}
                 onClick={() => handlePillClick(pill)}
-                className={`inline-flex items-center px-4 py-2 rounded-full text-xs font-cinzel font-bold uppercase tracking-wider transition-all duration-200 border shadow-sm ${
-                  isActive
+                className={`inline-flex items-center px-4 py-2 rounded-full text-xs font-cinzel font-bold uppercase tracking-wider transition-all duration-200 border shadow-sm ${isActive
                     ? 'bg-primary-deep text-cream border-primary-deep shadow-md'
                     : 'bg-white text-primary-deep border-border hover:border-primary hover:bg-blush/30'
-                }`}
+                  }`}
               >
                 {pill.label}
               </button>
