@@ -104,7 +104,7 @@ export default function Footer() {
             <ul className="space-y-3.5 text-xs text-cream/80 font-body">
               <li className="flex items-center space-x-2.5">
                 <Phone className="h-4 w-4 text-accent flex-shrink-0" />
-                <span className="hover:text-accent transition-colors">+1 (555) 123-4567</span>
+                <span className="hover:text-accent transition-colors">(346) 368-4831</span>
               </li>
               <li className="flex items-start space-x-2.5">
                 <MapPin className="h-4 w-4 text-accent flex-shrink-0 mt-0.5" />

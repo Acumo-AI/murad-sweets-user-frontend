@@ -436,7 +436,7 @@ export default function CheckoutPage() {
                       type="tel"
                       {...register('phone')}
                       className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep focus:outline-none"
-                      placeholder="(555) 019-9283"
+                      placeholder="(346) 368-4831"
                     />
                     {errors.phone && <span className="text-[10px] text-red-600 block mt-1">{errors.phone.message}</span>}
                   </div>

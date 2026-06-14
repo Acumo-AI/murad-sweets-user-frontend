@@ -495,7 +495,7 @@ function AddOrderModal({
           </div>
           <div>
             <label style={{ display: 'block', fontSize: '12px', color: '#8A5A2B', marginBottom: '4px', fontWeight: 600 }}>Phone Number</label>
-            <input placeholder="(555) 123-4567" value={form.customer_phone} onChange={e => setForm({ ...form, customer_phone: e.target.value })} style={inputStyle} />
+            <input placeholder="(346) 368-4831" value={form.customer_phone} onChange={e => setForm({ ...form, customer_phone: e.target.value })} style={inputStyle} />
           </div>
           <div>
             <label style={{ display: 'block', fontSize: '12px', color: '#8A5A2B', marginBottom: '4px', fontWeight: 600 }}>Scheduled Date</label>

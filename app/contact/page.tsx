@@ -117,7 +117,7 @@ export default function ContactPage() {
                 type="tel"
                 {...register('phone')}
                 className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep placeholder-brown/30 focus:outline-none"
-                placeholder="(555) 123-4567"
+                placeholder="(346) 368-4831"
               />
               {errors.phone && <span className="text-[10px] text-red-600 block mt-1">{errors.phone.message}</span>}
             </div>
@@ -168,7 +168,7 @@ export default function ContactPage() {
                 <Phone className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold text-primary-deep uppercase font-cinzel text-[10px] tracking-wider block">Customer Care</span>
-                  <span className="text-primary-deep font-semibold">+1 (555) 123-4567</span>
+                  <span className="text-primary-deep font-semibold">(346) 368-4831</span>
                 </div>
               </div>
 
