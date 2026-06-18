@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { X, Plus } from 'lucide-react';
+import { X, Plus, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/app/store/useCart';
 import {
@@ -366,6 +366,15 @@ function SweetRow({
     flavorType: 'Classic',
   };
 
+  const [isAdded, setIsAdded] = useState(false);
+
+  const handleAdd = () => {
+    if (isBoxFull) return;
+    onAdd(product.name, meta.color, product.images?.[0]);
+    setIsAdded(true);
+    setTimeout(() => setIsAdded(false), 600);
+  };
+
   return (
     <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-[#FAF6F0]/60 transition-colors">
       {product.images?.[0] ? (
@@ -393,14 +402,22 @@ function SweetRow({
       <button
         type="button"
         disabled={isBoxFull}
-        onClick={() => onAdd(product.name, meta.color, product.images?.[0])}
-        className={`shrink-0 text-xs font-bold px-3 py-1.5 rounded-full uppercase transition-colors ${
-          isBoxFull
+        onClick={handleAdd}
+        className={`shrink-0 text-xs font-bold px-3 py-1.5 rounded-full uppercase transition-all duration-300 flex items-center gap-1 ${
+          isAdded
+            ? 'bg-[#3fb84e] text-white scale-105 shadow-sm'
+            : isBoxFull
             ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
             : 'bg-[#1A1A1A] text-white hover:bg-primary'
         }`}
       >
-        + Add
+        {isAdded ? (
+          <>
+            <Check className="w-3 h-3" /> Added
+          </>
+        ) : (
+          '+ Add'
+        )}
       </button>
     </div>
   );

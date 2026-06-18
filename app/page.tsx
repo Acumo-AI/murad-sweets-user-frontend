@@ -8,7 +8,7 @@ import CategoryShowcase from '@/components/CategoryShowcase';
 
 export default function Home() {
   return (
-    <div className="flex flex-col w-full bg-cream">
+    <div className="flex flex-col w-full overflow-x-hidden bg-cream">
       {/* 1. HERO SECTION */}
       <section className="relative min-h-[90vh] md:min-h-[85vh] flex items-center justify-start pt-28 pb-12 md:py-20 overflow-hidden">
         {/* Background Image */}
@@ -147,7 +147,7 @@ export default function Home() {
       </section>
 
       {/* 7. TESTIMONIALS */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      <section className="relative py-20 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2 text-left">
             <span className="font-script text-accent text-3xl">Sweet Feedback</span>
@@ -186,7 +186,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="flex overflow-x-auto gap-6 pb-6 scroll-smooth snap-x snap-mandatory">
+        <div className="flex w-full overflow-x-auto gap-6 pb-6 scroll-smooth snap-x snap-mandatory">
           {[
             {
               name: "Fazzarna Rabbi",
@@ -246,7 +246,7 @@ export default function Home() {
               </div>
 
               {/* Reviewer Details */}
-              <div className="flex items-center justify-between border-t border-border/40 pt-3">
+              <div className="flex items-center justify-between border-t border-border/40 pt-3 flex-wrap gap-2">
                 <span className="text-[10px] text-brown font-body">
                   {item.date}
                 </span>

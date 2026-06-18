@@ -290,7 +290,7 @@ function OrderDetailModal({
         </div>
 
         {/* Customer & Fulfillment Info */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '24px' }}>
           <div style={{ background: '#FFF', padding: '16px', borderRadius: '12px', border: '1px solid #E8C8C8' }}>
             <h4 style={{ margin: '0 0 10px', color: '#7B1E2B', fontSize: '14px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Customer Info</h4>
             <p style={{ margin: '4px 0', fontSize: '14px', fontWeight: 600, color: '#4A0F17' }}>{order.customer.full_name}</p>
@@ -354,7 +354,7 @@ function OrderDetailModal({
         )}
 
         {/* Status Actions */}
-        <div style={{ borderTop: '1px solid #E8C8C8', paddingTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+        <div style={{ borderTop: '1px solid #E8C8C8', paddingTop: '20px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
           <div>
             <label style={{ display: 'block', fontSize: '12px', color: '#8A5A2B', marginBottom: '6px', fontWeight: 600 }}>Update Order Status</label>
             <select
@@ -484,7 +484,7 @@ function AddOrderModal({
       }} onClick={e => e.stopPropagation()}>
         <h3 style={{ margin: '0 0 24px', color: '#4A0F17', fontSize: '24px', fontFamily: 'var(--font-heading)' }}>Manually Create Order</h3>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '24px' }}>
           <div>
             <label style={{ display: 'block', fontSize: '12px', color: '#8A5A2B', marginBottom: '4px', fontWeight: 600 }}>Customer Name</label>
             <input placeholder="John Doe" value={form.customer_name} onChange={e => setForm({ ...form, customer_name: e.target.value })} style={inputStyle} />
@@ -515,7 +515,7 @@ function AddOrderModal({
 
           return (
             <div key={idx} style={{ marginBottom: '16px', padding: '16px', background: '#FFF', borderRadius: '12px', border: '1px solid #E8C8C8' }}>
-              <div style={{ display: 'flex', gap: '12px', marginBottom: isCustomBox ? '16px' : '0' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: isCustomBox ? '16px' : '0' }}>
                 <select
                   value={item.category_id}
                   onChange={e => {
@@ -562,7 +562,7 @@ function AddOrderModal({
                 <div style={{ padding: '16px', background: '#FAF6F0', borderRadius: '8px', border: '1px dashed #E8C8C8' }}>
                   <h5 style={{ margin: '0 0 12px', color: '#8A5A2B', fontSize: '14px', fontWeight: 600 }}>Select {boxSize} Items ({totalSelected}/{boxSize} selected)</h5>
                   {item.selections.map((sel, sIdx) => (
-                    <div key={sIdx} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                    <div key={sIdx} style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '8px' }}>
                       <select
                         value={sel.id}
                         onChange={e => {
@@ -767,7 +767,7 @@ export default function HistoryPage() {
         position: 'sticky', top: 0, zIndex: 10,
         boxShadow: '0 2px 10px rgba(74, 15, 23, 0.05)'
       }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '16px 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '16px 20px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
           <div>
             <h1 style={{ margin: 0, fontSize: '26px', fontFamily: 'var(--font-heading)', color: '#7B1E2B' }}>
               Admin Management Portal
@@ -808,7 +808,7 @@ export default function HistoryPage() {
       <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px' }}>
         
         {/* Statistics Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '32px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '32px' }}>
           
           <div style={{ background: '#FFF', padding: '20px', borderRadius: '16px', border: '1px solid #E8C8C8', boxShadow: '0 4px 10px rgba(74, 15, 23, 0.02)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', color: '#8A5A2B', fontSize: '13px', fontWeight: 600, marginBottom: '8px' }}>
@@ -848,7 +848,7 @@ export default function HistoryPage() {
         </div>
 
         {/* Navigation Tabs */}
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', background: '#FFF', borderRadius: '12px', padding: '6px', width: 'fit-content', border: '1px solid #E8C8C8', boxShadow: '0 4px 15px rgba(74, 15, 23, 0.05)' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '24px', background: '#FFF', borderRadius: '12px', padding: '6px', width: '100%', maxWidth: 'fit-content', border: '1px solid #E8C8C8', boxShadow: '0 4px 15px rgba(74, 15, 23, 0.05)' }}>
           {(['orders', 'stock'] as const).map(tab => (
             <button
               key={tab}
@@ -899,7 +899,7 @@ export default function HistoryPage() {
                 onChange={e => setOrderQuery(e.target.value)}
                 style={{
                   padding: '10px 16px', borderRadius: '8px', border: '1px solid #E8C8C8',
-                  width: '320px', outline: 'none', background: '#FFF', color: '#4A0F17'
+                  width: '100%', maxWidth: '320px', outline: 'none', background: '#FFF', color: '#4A0F17'
                 }}
               />
             </div>
@@ -909,7 +909,7 @@ export default function HistoryPage() {
             ) : filteredOrders.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '80px', color: '#8A5A2B', fontSize: '16px', background: '#FFF', borderRadius: '16px', border: '1px dashed #E8C8C8' }}>No orders found for this search.</div>
             ) : (
-              <div style={{ background: '#FFF', border: '1px solid #E8C8C8', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(74, 15, 23, 0.05)' }}>
+              <div style={{ background: '#FFF', border: '1px solid #E8C8C8', borderRadius: '16px', overflowX: 'auto', boxShadow: '0 4px 20px rgba(74, 15, 23, 0.05)' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
                   <thead>
                     <tr style={{ borderBottom: '2px solid #E8C8C8', background: '#FAF6F0' }}>
@@ -983,7 +983,7 @@ export default function HistoryPage() {
                 onChange={e => setStockQuery(e.target.value)}
                 style={{
                   padding: '10px 16px', borderRadius: '8px', border: '1px solid #E8C8C8',
-                  width: '320px', outline: 'none', background: '#FFF', color: '#4A0F17'
+                  width: '100%', maxWidth: '320px', outline: 'none', background: '#FFF', color: '#4A0F17'
                 }}
               />
             </div>
@@ -993,7 +993,7 @@ export default function HistoryPage() {
             ) : filteredStock.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '80px', color: '#8A5A2B', fontSize: '16px', background: '#FFF', borderRadius: '16px', border: '1px dashed #E8C8C8' }}>No tracked products found.</div>
             ) : (
-              <div style={{ background: '#FFF', border: '1px solid #E8C8C8', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 20px rgba(74, 15, 23, 0.05)' }}>
+              <div style={{ background: '#FFF', border: '1px solid #E8C8C8', borderRadius: '16px', overflowX: 'auto', boxShadow: '0 4px 20px rgba(74, 15, 23, 0.05)' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
                   <thead>
                     <tr style={{ borderBottom: '2px solid #E8C8C8', background: '#FAF6F0' }}>

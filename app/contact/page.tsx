@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Phone, MapPin, Clock, MessageCircle, Send, Check } from 'lucide-react';
+import { Phone, MapPin, Clock, MessageCircle, Send, Check, DollarSign } from 'lucide-react';
 import { useCart } from '@/app/store/useCart';
 import { submitInquiry } from '@/app/lib/api';
 
@@ -194,18 +194,18 @@ export default function ContactPage() {
             </div>
 
             {/* Social channels */}
-            <div className="pt-2 border-t border-border flex gap-4">
-              <a href="#" className="flex-1 py-2 px-3 border border-border bg-white rounded-lg flex items-center justify-center space-x-2 text-[10px] uppercase font-cinzel font-bold text-brown hover:text-primary transition-all">
+            <div className="pt-2 border-t border-border flex gap-4 flex-wrap">
+              <a href="https://cash.app/order/$muradsweets/pickup" target="_blank" rel="noopener noreferrer" className="flex-1 min-w-[100px] py-2 px-3 border border-border bg-white rounded-lg flex items-center justify-center space-x-2 text-[10px] uppercase font-cinzel font-bold text-brown hover:text-primary transition-all">
+                <DollarSign className="h-4 w-4" />
+                <span>CashApp</span>
+              </a>
+              <a href="https://www.facebook.com/p/Murad-Sweets-61581084905385/" target="_blank" rel="noopener noreferrer" className="flex-1 min-w-[100px] py-2 px-3 border border-border bg-white rounded-lg flex items-center justify-center space-x-2 text-[10px] uppercase font-cinzel font-bold text-brown hover:text-primary transition-all">
                 <FacebookIcon className="h-4 w-4" />
                 <span>Facebook</span>
               </a>
-              <a href="#" className="flex-1 py-2 px-3 border border-border bg-white rounded-lg flex items-center justify-center space-x-2 text-[10px] uppercase font-cinzel font-bold text-brown hover:text-primary transition-all">
+              <a href="https://www.instagram.com/murad_sweets_usa/" target="_blank" rel="noopener noreferrer" className="flex-1 min-w-[100px] py-2 px-3 border border-border bg-white rounded-lg flex items-center justify-center space-x-2 text-[10px] uppercase font-cinzel font-bold text-brown hover:text-primary transition-all">
                 <InstagramIcon className="h-4 w-4" />
                 <span>Instagram</span>
-              </a>
-              <a href="#" className="flex-1 py-2 px-3 border border-border bg-white rounded-lg flex items-center justify-center space-x-2 text-[10px] uppercase font-cinzel font-bold text-brown hover:text-primary transition-all">
-                <MessageCircle className="h-4 w-4" />
-                <span>WhatsApp</span>
               </a>
             </div>
           </div>

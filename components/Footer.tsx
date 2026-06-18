@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Phone, MapPin, Clock, MessageCircle } from 'lucide-react';
+import { Phone, MapPin, Clock, MessageCircle, DollarSign } from 'lucide-react';
 
 const FacebookIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -48,25 +48,31 @@ export default function Footer() {
             {/* Socials */}
             <div className="flex space-x-4 pt-2">
               <a
-                href="#"
+                href="https://cash.app/order/$muradsweets/pickup"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 rounded-full bg-white/5 hover:bg-accent hover:text-primary-deep transition-all duration-200"
+                aria-label="Order on CashApp"
+              >
+                <DollarSign className="h-4 w-4" />
+              </a>
+              <a
+                href="https://www.facebook.com/p/Murad-Sweets-61581084905385/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-2 rounded-full bg-white/5 hover:bg-accent hover:text-primary-deep transition-all duration-200"
                 aria-label="Visit Facebook"
               >
                 <FacebookIcon className="h-4 w-4" />
               </a>
               <a
-                href="#"
+                href="https://www.instagram.com/murad_sweets_usa/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="p-2 rounded-full bg-white/5 hover:bg-accent hover:text-primary-deep transition-all duration-200"
                 aria-label="Visit Instagram"
               >
                 <InstagramIcon className="h-4 w-4" />
-              </a>
-              <a
-                href="#"
-                className="p-2 rounded-full bg-white/5 hover:bg-accent hover:text-primary-deep transition-all duration-200"
-                aria-label="Chat on WhatsApp"
-              >
-                <MessageCircle className="h-4 w-4" />
               </a>
             </div>
           </div>

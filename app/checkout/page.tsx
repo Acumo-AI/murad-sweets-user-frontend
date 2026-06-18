@@ -116,6 +116,11 @@ export default function CheckoutPage() {
     if (cartItems.length === 0) return;
 
     const fetchQuote = async () => {
+      if (watchedFulfillment === 'delivery' && (!watchedZip || watchedZip.length < 5)) {
+        setQuote(null);
+        return;
+      }
+
       setIsQuoting(true);
       try {
         const zip = watchedFulfillment === 'delivery' ? watchedZip : '';
