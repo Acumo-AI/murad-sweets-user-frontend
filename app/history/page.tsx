@@ -74,6 +74,33 @@ interface OrderItemForm {
   selections: { id: string; quantity: number }[];
 }
 
+interface AdminProduct {
+  id: string;
+  category_id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  base_price_cents: number;
+  unit_label: string | null;
+  product_type: string;
+  min_quantity: number;
+  max_quantity: number | null;
+  is_active: boolean;
+  is_in_stock: boolean;
+  quantity_on_hand: number | null;
+}
+
+interface AdminCategory {
+  id: string;
+  slug: string;
+  name: string;
+  description: string | null;
+  sort_order: number;
+  is_active: boolean;
+  product_count: number;
+  products: AdminProduct[];
+}
+
 // ─── Status Badge & Config ───────────────────────────────────────────────────
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; dot: string; label: string }> = {
@@ -615,6 +642,103 @@ function AddOrderModal({
   );
 }
 
+// ─── Products Admin Sub-Components ─────────────────────────────────────────
+
+function AddCategoryForm({ onSave, onCancel }: { onSave: (d: any) => Promise<void>; onCancel: () => void }) {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [saving, setSaving] = useState(false);
+  const inp = { padding: '10px 12px', borderRadius: '8px', border: '1px solid #E8C8C8', width: '100%', outline: 'none', background: '#FFF', color: '#4A0F17', boxSizing: 'border-box' as const };
+  return (
+    <div>
+      <h3 style={{ margin: '0 0 20px', color: '#4A0F17', fontFamily: 'var(--font-heading)', fontSize: '20px' }}>New Category</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        <div><label style={{ fontSize: '12px', color: '#8A5A2B', fontWeight: 700, display: 'block', marginBottom: '4px' }}>CATEGORY NAME *</label><input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Traditional Pithas" style={inp} /></div>
+        <div><label style={{ fontSize: '12px', color: '#8A5A2B', fontWeight: 700, display: 'block', marginBottom: '4px' }}>DESCRIPTION</label><input value={description} onChange={e => setDescription(e.target.value)} placeholder="Optional description" style={inp} /></div>
+      </div>
+      <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+        <button onClick={onCancel} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: '1px solid #E8C8C8', background: '#FFF', color: '#8A5A2B', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+        <button disabled={!name || saving} onClick={async () => { setSaving(true); await onSave({ name, description }); setSaving(false); }} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: 'none', background: '#7B1E2B', color: '#FFF', fontWeight: 700, cursor: 'pointer', opacity: !name ? 0.5 : 1 }}>{saving ? 'Saving...' : 'Create Category'}</button>
+      </div>
+    </div>
+  );
+}
+
+function EditCategoryRow({ cat, onSave, onCancel }: { cat: any; onSave: (d: any) => Promise<void>; onCancel: () => void }) {
+  const [name, setName] = useState(cat.name);
+  const [description, setDescription] = useState(cat.description || '');
+  const [isActive, setIsActive] = useState(cat.is_active);
+  const [saving, setSaving] = useState(false);
+  const inp = { padding: '8px 12px', borderRadius: '6px', border: '1px solid #E8C8C8', background: '#FFF', color: '#4A0F17', outline: 'none' };
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 20px', background: '#FFF8F0', borderBottom: '1px solid #E8C8C8', flexWrap: 'wrap' }}>
+      <input value={name} onChange={e => setName(e.target.value)} style={{ ...inp, flex: 1, minWidth: '150px' }} placeholder="Category name" />
+      <input value={description} onChange={e => setDescription(e.target.value)} style={{ ...inp, flex: 2, minWidth: '200px' }} placeholder="Description" />
+      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#4A0F17', fontWeight: 600, cursor: 'pointer' }}><input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} /> Active</label>
+      <button disabled={saving} onClick={async () => { setSaving(true); await onSave({ name, description, is_active: isActive }); setSaving(false); }} style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', background: '#7B1E2B', color: '#FFF', fontWeight: 700, cursor: 'pointer' }}>{saving ? '...' : 'Save'}</button>
+      <button onClick={onCancel} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #E8C8C8', background: '#FFF', color: '#8A5A2B', cursor: 'pointer' }}>Cancel</button>
+    </div>
+  );
+}
+
+function AddProductRow({ categoryId, onSave, onCancel }: { categoryId: string; onSave: (d: any) => Promise<void>; onCancel: () => void }) {
+  const [name, setName] = useState('');
+  const [price, setPrice] = useState('');
+  const [description, setDescription] = useState('');
+  const [unitLabel, setUnitLabel] = useState('');
+  const [saving, setSaving] = useState(false);
+  const inp = { padding: '8px 10px', borderRadius: '6px', border: '1px solid #E8C8C8', background: '#FFF', color: '#4A0F17', outline: 'none' };
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px', borderRadius: '10px', background: '#F0FAF4', border: '1px dashed #10B981', flexWrap: 'wrap' }}>
+      <input value={name} onChange={e => setName(e.target.value)} placeholder="Product name *" style={{ ...inp, flex: 2, minWidth: '150px' }} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ color: '#8A5A2B', fontWeight: 700 }}>$</span><input type="number" value={price} onChange={e => setPrice(e.target.value)} placeholder="Price" style={{ ...inp, width: '90px' }} /></div>
+      <input value={unitLabel} onChange={e => setUnitLabel(e.target.value)} placeholder="Unit (e.g. lb, box)" style={{ ...inp, width: '130px' }} />
+      <input value={description} onChange={e => setDescription(e.target.value)} placeholder="Description" style={{ ...inp, flex: 3, minWidth: '180px' }} />
+      <button disabled={!name || !price || saving} onClick={async () => { setSaving(true); await onSave({ name, description, base_price_cents: Math.round(parseFloat(price) * 100), unit_label: unitLabel || null }); setSaving(false); }} style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', background: '#10B981', color: '#FFF', fontWeight: 700, cursor: 'pointer', opacity: (!name || !price) ? 0.5 : 1 }}>{saving ? '...' : 'Add'}</button>
+      <button onClick={onCancel} style={{ padding: '8px 14px', borderRadius: '6px', border: '1px solid #E8C8C8', background: '#FFF', color: '#8A5A2B', cursor: 'pointer' }}>Cancel</button>
+    </div>
+  );
+}
+
+function EditProductRow({ prod, categories, onSave, onCancel }: { prod: any; categories: any[]; onSave: (d: any) => Promise<void>; onCancel: () => void }) {
+  const [name, setName] = useState(prod.name);
+  const [price, setPrice] = useState((prod.base_price_cents / 100).toFixed(2));
+  const [description, setDescription] = useState(prod.description || '');
+  const [unitLabel, setUnitLabel] = useState(prod.unit_label || '');
+  const [isActive, setIsActive] = useState(prod.is_active);
+  const [isInStock, setIsInStock] = useState(prod.is_in_stock);
+  const [categoryId, setCategoryId] = useState(prod.category_id || '');
+  const [saving, setSaving] = useState(false);
+  const inp = { padding: '8px 10px', borderRadius: '6px', border: '1px solid #E8C8C8', background: '#FFF', color: '#4A0F17', outline: 'none' };
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: '10px', background: '#FAFAF0', border: '1px solid #c9a84c' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
+        <input value={name} onChange={e => setName(e.target.value)} placeholder="Name *" style={{ ...inp, flex: 2, minWidth: '150px' }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><span style={{ color: '#8A5A2B', fontWeight: 700 }}>$</span><input type="number" value={price} onChange={e => setPrice(e.target.value)} style={{ ...inp, width: '90px' }} /></div>
+        <input value={unitLabel} onChange={e => setUnitLabel(e.target.value)} placeholder="Unit label" style={{ ...inp, width: '120px' }} />
+        <select value={categoryId} onChange={e => setCategoryId(e.target.value)} style={{ ...inp, minWidth: '150px' }}>
+          {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+      </div>
+      <input value={description} onChange={e => setDescription(e.target.value)} placeholder="Description" style={{ ...inp, width: '100%' }} />
+      <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#4A0F17', fontWeight: 600, cursor: 'pointer' }}><input type="checkbox" checked={isActive} onChange={e => setIsActive(e.target.checked)} /> Active</label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#4A0F17', fontWeight: 600, cursor: 'pointer' }}><input type="checkbox" checked={isInStock} onChange={e => setIsInStock(e.target.checked)} /> In Stock</label>
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+          <button onClick={onCancel} style={{ padding: '8px 14px', borderRadius: '6px', border: '1px solid #E8C8C8', background: '#FFF', color: '#8A5A2B', cursor: 'pointer' }}>Cancel</button>
+          <button disabled={saving} onClick={async () => { 
+            setSaving(true); 
+            const updates: any = { name, description, base_price_cents: Math.round(parseFloat(price) * 100), unit_label: unitLabel || null, is_active: isActive, is_in_stock: isInStock };
+            if (categoryId && categoryId !== prod.category_id) updates.category_id = categoryId;
+            await onSave(updates); 
+            setSaving(false); 
+          }} style={{ padding: '8px 20px', borderRadius: '6px', border: 'none', background: '#7B1E2B', color: '#FFF', fontWeight: 700, cursor: 'pointer' }}>{saving ? 'Saving...' : 'Save Changes'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Page ─────────────────────────────────────────────────────────────
 
 export default function HistoryPage() {
@@ -622,7 +746,7 @@ export default function HistoryPage() {
   const [stock, setStock] = useState<StockSummary[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [loadingStock, setLoadingStock] = useState(true);
-  const [activeTab, setActiveTab] = useState<'orders' | 'stock'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'stock' | 'delivery' | 'products'>('orders');
   const [orderFilter, setOrderFilter] = useState('all');
   
   // Search & Sorting States
@@ -634,6 +758,19 @@ export default function HistoryPage() {
   const [statusTarget, setStatusTarget] = useState<OrderSummary | null>(null);
   const [selectedOrderNumber, setSelectedOrderNumber] = useState<string | null>(null);
   const [showAddOrder, setShowAddOrder] = useState(false);
+
+  // Delivery settings
+  const [deliveryRate, setDeliveryRate] = useState<string>('1.00');
+  const [savingRate, setSavingRate] = useState(false);
+
+  // Products management
+  const [categories, setCategories] = useState<AdminCategory[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(null);
+  const [editingCategory, setEditingCategory] = useState<AdminCategory | null>(null);
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [showAddProduct, setShowAddProduct] = useState<string | null>(null); // holds category_id
   
   // Toast notifications
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -667,7 +804,50 @@ export default function HistoryPage() {
     }
   };
 
-  useEffect(() => { fetchOrders(); fetchStock(); }, []);
+  const fetchDeliverySettings = async () => {
+    try {
+      const res = await api.get('/settings/delivery_fee_per_mile');
+      setDeliveryRate(res.data.value);
+    } catch {
+      // ignore
+    }
+  };
+
+  useEffect(() => { fetchOrders(); fetchStock(); fetchDeliverySettings(); }, []);
+
+  const fetchCategories = async () => {
+    setLoadingProducts(true);
+    try {
+      const res = await api.get('/admin/products/categories');
+      setCategories(res.data);
+    } catch {
+      showToast('Failed to load products.', 'error');
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (!confirm('Delete this product? This cannot be undone.')) return;
+    try {
+      await api.delete(`/admin/products/products/${productId}`);
+      showToast('Product deleted.');
+      fetchCategories();
+    } catch {
+      showToast('Failed to delete product.', 'error');
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string) => {
+    if (!confirm('Delete this category AND all its products? This cannot be undone.')) return;
+    try {
+      await api.delete(`/admin/products/categories/${categoryId}`);
+      showToast('Category deleted.');
+      fetchCategories();
+    } catch {
+      showToast('Failed to delete category.', 'error');
+    }
+  };
 
   // Quick statistics calculation
   const totalSales = orders
@@ -738,6 +918,19 @@ export default function HistoryPage() {
       setUpdatingStockId(null);
     }
   };
+
+  const handleSaveDeliveryRate = async () => {
+    setSavingRate(true);
+    try {
+      await api.put('/settings/delivery_fee_per_mile', { value: deliveryRate });
+      showToast('Delivery rate updated successfully.');
+    } catch {
+      showToast('Failed to update delivery rate.', 'error');
+    } finally {
+      setSavingRate(false);
+    }
+  };
+
 
   return (
     <div style={{
@@ -849,10 +1042,13 @@ export default function HistoryPage() {
 
         {/* Navigation Tabs */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '24px', background: '#FFF', borderRadius: '12px', padding: '6px', width: '100%', maxWidth: 'fit-content', border: '1px solid #E8C8C8', boxShadow: '0 4px 15px rgba(74, 15, 23, 0.05)' }}>
-          {(['orders', 'stock'] as const).map(tab => (
+          {(['orders', 'stock', 'delivery', 'products'] as const).map(tab => (
             <button
               key={tab}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => {
+                setActiveTab(tab);
+                if (tab === 'products') fetchCategories();
+              }}
               style={{
                 padding: '10px 24px', borderRadius: '8px', border: 'none', cursor: 'pointer',
                 background: activeTab === tab ? '#FAF6F0' : 'transparent',
@@ -862,7 +1058,7 @@ export default function HistoryPage() {
                 fontFamily: 'var(--font-subheading)'
               }}
             >
-              {tab === 'orders' ? `📦 Orders (${orders.length})` : `📉 Stock Tracker (${stock.length})`}
+              {tab === 'orders' ? `📦 Orders (${orders.length})` : tab === 'stock' ? `📉 Stock Tracker (${stock.length})` : tab === 'delivery' ? '🚗 Delivery Settings' : `🍮 Products`}
             </button>
           ))}
         </div>
@@ -1090,6 +1286,153 @@ export default function HistoryPage() {
                     })}
                   </tbody>
                 </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── DELIVERY SETTINGS TAB CONTENT ── */}
+        {activeTab === 'delivery' && (
+          <div style={{ background: '#FFF', padding: '32px', borderRadius: '16px', border: '1px solid #E8C8C8', maxWidth: '600px', boxShadow: '0 4px 20px rgba(74, 15, 23, 0.05)' }}>
+            <h3 style={{ margin: '0 0 16px', color: '#4A0F17', fontSize: '20px', fontFamily: 'var(--font-heading)' }}>Dynamic Delivery Pricing</h3>
+            <p style={{ color: '#8A5A2B', fontSize: '14px', marginBottom: '24px', lineHeight: 1.5 }}>
+              Set the per-mile cost for local delivery. This rate multiplies by the customer's driving distance (calculated dynamically via Mapbox and OSRM) and adds to the base fee for customers beyond 5 miles.
+            </p>
+            
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '13px', color: '#7B1E2B', marginBottom: '8px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Cost Per Mile ($)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '18px', fontWeight: 700, color: '#4A0F17' }}>$</span>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={deliveryRate}
+                  onChange={e => setDeliveryRate(e.target.value)}
+                  style={{
+                    padding: '12px 16px', borderRadius: '8px', border: '1px solid #E8C8C8',
+                    fontSize: '16px', fontWeight: 700, outline: 'none', background: '#FAF6F0', color: '#4A0F17', width: '120px'
+                  }}
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={handleSaveDeliveryRate}
+              disabled={savingRate}
+              style={{
+                padding: '12px 24px', borderRadius: '8px', border: 'none', background: '#7B1E2B',
+                color: '#FFF', fontSize: '15px', fontWeight: 700, cursor: savingRate ? 'not-allowed' : 'pointer',
+                opacity: savingRate ? 0.7 : 1, transition: 'background 0.2s'
+              }}
+            >
+              {savingRate ? 'Saving...' : 'Save Settings'}
+            </button>
+          </div>
+        )}
+
+        {/* ── PRODUCTS TAB CONTENT ── */}
+        {activeTab === 'products' && (
+          <div>
+            {/* Header Row */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '20px', fontFamily: 'var(--font-heading)', color: '#4A0F17' }}>Product Catalog Manager</h2>
+                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#8A5A2B' }}>Changes reflect immediately on the public menu</p>
+              </div>
+              <button onClick={() => setShowAddCategory(true)} style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#7B1E2B', color: '#FFF', fontWeight: 700, cursor: 'pointer', fontSize: '14px' }}>+ Add Category</button>
+            </div>
+
+            {loadingProducts ? (
+              <div style={{ textAlign: 'center', padding: '80px', color: '#8A5A2B' }}>Loading catalog...</div>
+            ) : categories.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '80px', color: '#8A5A2B', background: '#FFF', borderRadius: '16px', border: '1px dashed #E8C8C8' }}>No categories found. Add one to get started.</div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                {categories.map(cat => (
+                  <div key={cat.id} style={{ background: '#FFF', borderRadius: '16px', border: '1px solid #E8C8C8', overflow: 'hidden', boxShadow: '0 4px 15px rgba(74, 15, 23, 0.04)' }}>
+
+                    {/* Category Header */}
+                    {editingCategory?.id === cat.id ? (
+                      <EditCategoryRow cat={editingCategory} onSave={async (updates) => {
+                        await api.patch(`/admin/products/categories/${cat.id}`, updates);
+                        showToast('Category updated.'); setEditingCategory(null); fetchCategories();
+                      }} onCancel={() => setEditingCategory(null)} />
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: '#FAF6F0', borderBottom: '1px solid #E8C8C8', flexWrap: 'wrap', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <button onClick={() => setExpandedCategory(expandedCategory === cat.id ? null : cat.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: '#7B1E2B' }}>{expandedCategory === cat.id ? '▲' : '▶'}</button>
+                          <div>
+                            <span style={{ fontWeight: 800, fontSize: '16px', color: '#4A0F17', fontFamily: 'var(--font-heading)' }}>{cat.name}</span>
+                            <span style={{ marginLeft: '10px', fontSize: '12px', color: '#8A5A2B' }}>{cat.product_count} item{cat.product_count !== 1 ? 's' : ''}</span>
+                            {!cat.is_active && <span style={{ marginLeft: '8px', fontSize: '11px', padding: '2px 8px', borderRadius: '999px', background: '#FEE2E2', color: '#991B1B', fontWeight: 700 }}>INACTIVE</span>}
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          <button onClick={() => setShowAddProduct(cat.id)} style={{ padding: '6px 14px', borderRadius: '6px', border: '1px solid #7B1E2B', background: '#FFF', color: '#7B1E2B', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>+ Add Item</button>
+                          <button onClick={() => setEditingCategory(cat)} style={{ padding: '6px 14px', borderRadius: '6px', border: '1px solid #E8C8C8', background: '#FFF', color: '#4A0F17', fontSize: '13px', cursor: 'pointer' }}>Edit</button>
+                          <button onClick={() => handleDeleteCategory(cat.id)} style={{ padding: '6px 14px', borderRadius: '6px', border: 'none', background: '#EF4444', color: '#FFF', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>Delete</button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Products List */}
+                    {expandedCategory === cat.id && (
+                      <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {showAddProduct === cat.id && (
+                          <AddProductRow categoryId={cat.id} onSave={async (data) => {
+                            await api.post('/admin/products/products', { category_id: cat.id, ...data });
+                            showToast('Product added.'); setShowAddProduct(null); fetchCategories();
+                          }} onCancel={() => setShowAddProduct(null)} />
+                        )}
+                        {cat.products.length === 0 && showAddProduct !== cat.id && (
+                          <p style={{ color: '#8A5A2B', fontSize: '13px', padding: '12px 0', textAlign: 'center' }}>No products in this category yet. Click "+ Add Item" to add one.</p>
+                        )}
+                        {cat.products.map(prod => (
+                          <div key={prod.id}>
+                            {editingProduct?.id === prod.id ? (
+                              <EditProductRow prod={editingProduct} categories={categories} onSave={async (updates) => {
+                                await api.patch(`/admin/products/products/${prod.id}`, updates);
+                                showToast('Product updated.'); setEditingProduct(null); fetchCategories();
+                              }} onCancel={() => setEditingProduct(null)} />
+                            ) : (
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: '10px', background: prod.is_active ? '#FAF6F0' : '#FEF3F3', border: '1px solid #E8C8C8', flexWrap: 'wrap', gap: '10px' }}>
+                                <div style={{ flex: 1, minWidth: '200px' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                    <span style={{ fontWeight: 700, color: '#4A0F17', fontSize: '15px' }}>{prod.name}</span>
+                                    {!prod.is_active && <span style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '999px', background: '#FEE2E2', color: '#991B1B', fontWeight: 700 }}>INACTIVE</span>}
+                                    {!prod.is_in_stock && <span style={{ fontSize: '11px', padding: '2px 6px', borderRadius: '999px', background: '#FEF3C7', color: '#92400E', fontWeight: 700 }}>OUT OF STOCK</span>}
+                                  </div>
+                                  <div style={{ fontSize: '13px', color: '#8A5A2B', marginTop: '2px' }}>
+                                    <strong style={{ color: '#2E7D32' }}>${(prod.base_price_cents / 100).toFixed(2)}</strong>
+                                    {prod.unit_label && <span style={{ marginLeft: '6px' }}>/ {prod.unit_label}</span>}
+                                    {prod.description && <span style={{ marginLeft: '8px', color: '#A0927A' }}>· {prod.description.slice(0, 60)}{prod.description.length > 60 ? '...' : ''}</span>}
+                                  </div>
+                                </div>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  <button onClick={() => setEditingProduct(prod)} style={{ padding: '5px 12px', borderRadius: '6px', border: '1px solid #E8C8C8', background: '#FFF', color: '#4A0F17', fontSize: '12px', cursor: 'pointer' }}>Edit</button>
+                                  <button onClick={() => handleDeleteProduct(prod.id)} style={{ padding: '5px 12px', borderRadius: '6px', border: 'none', background: '#EF4444', color: '#FFF', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Delete</button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add Category Modal */}
+            {showAddCategory && (
+              <div style={{ position: 'fixed', inset: 0, background: 'rgba(74,15,23,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }} onClick={() => setShowAddCategory(false)}>
+                <div style={{ background: '#FAF6F0', borderRadius: '16px', padding: '32px', width: '100%', maxWidth: '440px', border: '1px solid #E8C8C8', boxShadow: '0 10px 30px rgba(74,15,23,0.15)' }} onClick={e => e.stopPropagation()}>
+                  <AddCategoryForm onSave={async (data) => {
+                    await api.post('/admin/products/categories', data);
+                    showToast('Category created.'); setShowAddCategory(false); fetchCategories();
+                  }} onCancel={() => setShowAddCategory(false)} />
+                </div>
               </div>
             )}
           </div>

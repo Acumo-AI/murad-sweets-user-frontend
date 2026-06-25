@@ -9,20 +9,38 @@ import { NextRequest, NextResponse } from 'next/server';
 //
 // Uses EXACT mileage (not rounded), per spec.
 
-function calculateDeliveryFee(miles: number): { feeCents: number; eligible: boolean; message?: string } {
+// Uses EXACT mileage (not rounded), per spec.
+
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+
+async function getPerMileRate(): Promise<number> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/settings/delivery_fee_per_mile`, {
+      next: { revalidate: 60 },
+    });
+    if (!res.ok) return 1.0;
+    const data = await res.json();
+    const rate = parseFloat(data.value);
+    return isNaN(rate) ? 1.0 : rate;
+  } catch {
+    return 1.0;
+  }
+}
+
+function calculateDeliveryFee(miles: number, perMileRate: number): { feeCents: number; eligible: boolean; message?: string } {
   if (miles <= 5) {
     return { feeCents: 0, eligible: true };
   }
 
   if (miles <= 30) {
     // $10 base + $1 per mile — on the full distance
-    const fee = 10 + miles;
+    const fee = 10 + (miles * perMileRate);
     return { feeCents: Math.round(fee * 100), eligible: true };
   }
 
   if (miles <= 50) {
     // $1 per mile — no base fee
-    const fee = miles;
+    const fee = miles * perMileRate;
     return { feeCents: Math.round(fee * 100), eligible: true };
   }
 
@@ -47,6 +65,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid miles value' }, { status: 400 });
   }
 
-  const result = calculateDeliveryFee(miles);
-  return NextResponse.json({ ...result, distanceMiles: miles });
+  const perMileRate = await getPerMileRate();
+  const result = calculateDeliveryFee(miles, perMileRate);
+  return NextResponse.json({ ...result, distanceMiles: miles, perMileRate });
 }
