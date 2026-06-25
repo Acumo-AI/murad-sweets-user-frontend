@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { X, Plus, Minus, Trash2, ShoppingBag } from 'lucide-react';
+import { X, Plus, Minus, Trash2, ShoppingBag, Truck, MapPin } from 'lucide-react';
 import { useCart } from '@/app/store/useCart';
+import { useFulfillmentStore } from '@/app/store/fulfillmentStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CartDrawer() {
@@ -18,7 +19,11 @@ export default function CartDrawer() {
     getCartSubtotal,
   } = useCart();
 
+  const { orderType, address, deliveryFeeCents, getDeliveryFeeDisplay, openModal } = useFulfillmentStore();
+
   const subtotal = getCartSubtotal();
+  const deliveryFee = deliveryFeeCents !== null ? deliveryFeeCents / 100 : 0;
+  const total = subtotal + (orderType === 'delivery' ? deliveryFee : 0);
 
   const handleCheckoutClick = () => {
     setCartOpen(false);
@@ -185,16 +190,48 @@ export default function CartDrawer() {
             {/* Footer Summary (Only show if cart has items) */}
             {cartItems.length > 0 && (
               <div className="p-4 sm:p-6 bg-white border-t border-border space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="font-subheading text-xs uppercase tracking-widest text-brown">Subtotal</span>
-                  <span className="font-subheading text-lg text-primary font-bold">
-                    ${subtotal.toFixed(2)}
-                  </span>
+                {/* Fulfillment badge */}
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={openModal}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border bg-cream/50 hover:border-primary/40 hover:bg-blush/30 transition-colors"
+                    title="Change fulfillment method"
+                  >
+                    {orderType === 'delivery' ? (
+                      <Truck className="h-3 w-3 text-accent" />
+                    ) : (
+                      <MapPin className="h-3 w-3 text-emerald-600" />
+                    )}
+                    <span className="text-[10px] font-cinzel font-semibold text-primary-deep uppercase tracking-wider">
+                      {orderType === 'delivery' && address
+                        ? address.split(',')[0]
+                        : 'Pickup'}
+                    </span>
+                  </button>
+                  <span className="text-[10px] text-brown font-body underline underline-offset-2 cursor-pointer hover:text-primary transition-colors" onClick={openModal}>Change</span>
                 </div>
-                <p className="text-[11px] text-brown italic">
-                  Fulfillment preferences, delivery fees, and schedule details are configured at checkout.
-                </p>
-                <div className="space-y-2 pt-2">
+
+                {/* Price breakdown */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <span className="font-subheading text-xs uppercase tracking-widest text-brown">Subtotal</span>
+                    <span className="font-subheading text-sm text-primary-deep font-bold">${subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="font-subheading text-xs uppercase tracking-widest text-brown">Delivery Fee</span>
+                    <span className={`font-subheading text-sm font-bold ${
+                      orderType === 'delivery' && deliveryFee > 0 ? 'text-primary-deep' : 'text-emerald-600'
+                    }`}>
+                      {getDeliveryFeeDisplay()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t border-border">
+                    <span className="font-subheading text-sm uppercase tracking-widest text-primary-deep font-bold">Total</span>
+                    <span className="font-cinzel text-lg text-primary font-bold">${total.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-1">
                   <button
                     onClick={handleCheckoutClick}
                     className="w-full btn-gold py-3 text-xs uppercase tracking-widest"

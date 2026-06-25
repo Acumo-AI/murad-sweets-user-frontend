@@ -10,6 +10,8 @@ import PartyTrayModal from "@/components/PartyTrayModal";
 import SpecialtyModal from "@/components/SpecialtyModal";
 import PithaModal from "@/components/PithaModal";
 import MishtiPerPoundModal from "@/components/MishtiPerPoundModal";
+import FulfillmentModal from "@/components/FulfillmentModal";
+import FulfillmentGuard from "@/components/FulfillmentGuard";
 
 import type { Viewport } from "next";
 
@@ -80,6 +82,9 @@ export default function RootLayout({
         <SpecialtyModal />
         <PithaModal />
         <MishtiPerPoundModal />
+        {/* Fulfillment system */}
+        <FulfillmentGuard />
+        <FulfillmentModal />
       </body>
     </html>
   );
