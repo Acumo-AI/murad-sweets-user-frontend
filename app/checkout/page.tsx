@@ -160,10 +160,10 @@ function CheckoutForm() {
           notes: data.notes || '',
           paymentMethod: data.paymentMethod,
         });
-        
+
         clientSecret = res.client_secret;
         orderNumber = res.order_number || res.id;
-        
+
         if (data.paymentMethod === 'card' && clientSecret) {
           setPendingPayment({ clientSecret, orderNumber });
         }
@@ -172,7 +172,7 @@ function CheckoutForm() {
       if (data.paymentMethod === 'card' && clientSecret) {
         const cardElement = elements?.getElement(CardElement);
         if (!cardElement) throw new Error("Stripe not initialized");
-        
+
         const { error, paymentIntent } = await stripe!.confirmCardPayment(clientSecret, {
           payment_method: {
             card: cardElement,
@@ -182,7 +182,7 @@ function CheckoutForm() {
             }
           }
         });
-        
+
         if (error) {
           throw new Error(error.message); // This throws so we don't redirect, but we keep the pendingPayment state
         }
@@ -275,13 +275,12 @@ function CheckoutForm() {
             return (
               <div key={s.stepNum} className="flex flex-col items-center space-y-2">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center font-cinzel text-xs font-bold border-2 transition-all duration-300 ${
-                    isCompleted
-                      ? 'bg-primary border-primary text-white'
-                      : isActive
+                  className={`w-8 h-8 rounded-full flex items-center justify-center font-cinzel text-xs font-bold border-2 transition-all duration-300 ${isCompleted
+                    ? 'bg-primary border-primary text-white'
+                    : isActive
                       ? 'bg-cream border-primary text-primary'
                       : 'bg-white border-border text-brown'
-                  }`}
+                    }`}
                 >
                   {isCompleted ? <Check className="h-4 w-4" /> : s.stepNum}
                 </div>
@@ -424,7 +423,7 @@ function CheckoutForm() {
                       <span className="font-cinzel text-[11px] uppercase tracking-wider text-primary-deep font-bold">Stripe Secured Card Information</span>
                     </div>
                     <div className="bg-white border border-border rounded-md p-3.5">
-                      <CardElement 
+                      <CardElement
                         options={{
                           style: {
                             base: {
