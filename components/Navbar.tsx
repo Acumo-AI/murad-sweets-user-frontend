@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { ShoppingBag, Menu, X } from 'lucide-react';
+import { ShoppingBag, Menu, X, Truck, MapPin } from 'lucide-react';
 import { useCart } from '@/app/store/useCart';
+import { useFulfillmentStore } from '@/app/store/fulfillmentStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navbar() {
@@ -15,6 +16,8 @@ export default function Navbar() {
 
   const { getCartCount, setCartOpen } = useCart();
   const cartCount = getCartCount();
+
+  const { orderType, address, openModal, hasValidFulfillment } = useFulfillmentStore();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -88,8 +91,30 @@ export default function Navbar() {
               })}
             </div>
 
-            {/* Actions (Cart & Mobile Toggle) */}
-            <div className="flex items-center space-x-4">
+            {/* Actions (Cart & Fulfillment chip & Mobile Toggle) */}
+            <div className="flex items-center space-x-2 sm:space-x-3">
+
+              {/* Fulfillment Chip — desktop only */}
+              {hasValidFulfillment() && (
+                <button
+                  id="fulfillment-chip-btn"
+                  onClick={openModal}
+                  className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-accent/30 bg-white/5 hover:bg-white/10 hover:border-accent/60 transition-all duration-200 max-w-[200px]"
+                  title="Change fulfillment method"
+                >
+                  {orderType === 'delivery' ? (
+                    <Truck className="h-3 w-3 text-accent shrink-0" />
+                  ) : (
+                    <MapPin className="h-3 w-3 text-emerald-400 shrink-0" />
+                  )}
+                  <span className="text-[10px] font-cinzel font-semibold text-cream/80 uppercase tracking-wider truncate">
+                    {orderType === 'delivery' && address
+                      ? `Delivering: ${address.split(',')[0]}`
+                      : 'Pickup'}
+                  </span>
+                </button>
+              )}
+
               {/* Cart Icon */}
               <button
                 onClick={() => setCartOpen(true)}

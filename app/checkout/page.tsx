@@ -5,18 +5,17 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { Truck, MapPin, CreditCard, DollarSign, ArrowRight, ArrowLeft, ShoppingBag, Check, Loader2 } from 'lucide-react';
+import {
+  Truck, MapPin, CreditCard, DollarSign, ArrowRight, ArrowLeft,
+  ShoppingBag, Check, Loader2, Edit2
+} from 'lucide-react';
 import { useCart } from '@/app/store/useCart';
+import { useFulfillmentStore } from '@/app/store/fulfillmentStore';
 import { getCartQuote, createOrder } from '@/app/lib/api';
 import Image from 'next/image';
 
-// Unified Validation Schema
+// ─── Validation Schema (simplified — address is now pre-set by fulfillment store) ─
 const checkoutSchema = z.object({
-  fulfillment: z.enum(['delivery', 'pickup']),
-  street: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  zip: z.string().optional(),
   date: z.string().min(1, 'Date is required'),
   slot: z.string().min(1, 'Time slot is required'),
   fullName: z.string().min(2, 'Name must be at least 2 characters'),
@@ -28,12 +27,6 @@ const checkoutSchema = z.object({
   cardExpiry: z.string().optional(),
   cardCvc: z.string().optional(),
 }).superRefine((data, ctx) => {
-  if (data.fulfillment === 'delivery') {
-    if (!data.street) ctx.addIssue({ code: 'custom', message: 'Street address is required', path: ['street'] });
-    if (!data.city) ctx.addIssue({ code: 'custom', message: 'City is required', path: ['city'] });
-    if (!data.state) ctx.addIssue({ code: 'custom', message: 'State is required', path: ['state'] });
-    if (!data.zip) ctx.addIssue({ code: 'custom', message: 'ZIP code is required', path: ['zip'] });
-  }
   if (data.paymentMethod === 'card') {
     if (!data.cardNumber || data.cardNumber.replace(/\s/g, '').length < 16) {
       ctx.addIssue({ code: 'custom', message: 'Enter a valid 16-digit card number', path: ['cardNumber'] });
@@ -51,49 +44,45 @@ type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { cartItems, getCartSubtotal, clearCart, addToast } = useCart();
+
+  // ── Fulfillment store (single source of truth) ──
   const {
-    cartItems,
-    fulfillment,
-    setFulfillmentType,
-    getCartSubtotal,
-    getDeliveryFee,
-    getCartTotal,
-    clearCart,
-    addToast
-  } = useCart();
+    orderType,
+    address,
+    deliveryFeeCents,
+    drivingDistanceMiles,
+    openModal,
+    getDeliveryFeeDisplay,
+  } = useFulfillmentStore();
 
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isQuoting, setIsQuoting] = useState(false);
   const [quote, setQuote] = useState<{
     subtotal_cents: number;
     delivery_fee_cents: number;
     tax_cents: number;
     total_cents: number;
   } | null>(null);
-  const [isQuoting, setIsQuoting] = useState(false);
 
-  // Subtotal details
+  // ── Computed totals (prefer server quote, fall back to local) ──
   const subtotal = quote ? quote.subtotal_cents / 100 : getCartSubtotal();
-  const deliveryFee = quote ? quote.delivery_fee_cents / 100 : getDeliveryFee();
-  const total = quote ? quote.total_cents / 100 : getCartTotal();
+  const deliveryFee = deliveryFeeCents !== null ? deliveryFeeCents / 100 : 0;
+  const total = subtotal + (orderType === 'delivery' ? deliveryFee : 0);
 
-  // Initialize Form with React Hook Form
+  // ── Form ──
   const {
     register,
     handleSubmit,
     setValue,
     watch,
     trigger,
-    formState: { errors, isValid }
+    formState: { errors },
   } = useForm<CheckoutFormValues>({
     resolver: zodResolver(checkoutSchema),
     mode: 'all',
     defaultValues: {
-      fulfillment: fulfillment,
-      street: '',
-      city: '',
-      state: '',
-      zip: '',
       date: '',
       slot: 'Afternoon',
       fullName: '',
@@ -104,88 +93,61 @@ export default function CheckoutPage() {
       cardNumber: '',
       cardExpiry: '',
       cardCvc: '',
-    }
+    },
   });
 
-  const watchedFulfillment = watch('fulfillment');
-  const watchedZip = watch('zip');
   const watchedPayment = watch('paymentMethod');
 
-  // get quote effect
+  // ── Fetch server quote once on mount ──
   useEffect(() => {
     if (cartItems.length === 0) return;
-
     const fetchQuote = async () => {
-      if (watchedFulfillment === 'delivery' && (!watchedZip || watchedZip.length < 5)) {
-        setQuote(null);
-        return;
-      }
-
       setIsQuoting(true);
       try {
-        const zip = watchedFulfillment === 'delivery' ? watchedZip : '';
-        const q = await getCartQuote(cartItems, watchedFulfillment, zip || '');
+        const zip = orderType === 'delivery' && address ? address.match(/\d{5}/)?.[0] || '' : '';
+        const q = await getCartQuote(cartItems, orderType || 'pickup', zip);
         setQuote(q);
       } catch (err) {
-        console.error('Failed to get quote', err);
+        console.error('Quote fetch failed', err);
       } finally {
         setIsQuoting(false);
       }
     };
+    fetchQuote();
+  }, [cartItems, orderType, address]);
 
-    // debounce quote fetching
-    const timeout = setTimeout(() => {
-      fetchQuote();
-    }, 500);
-
-    return () => clearTimeout(timeout);
-  }, [cartItems, watchedFulfillment, watchedZip]);
-
-  // Tomorrow's date helper (ISO format)
   const getMinDate = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     return tomorrow.toISOString().split('T')[0];
   };
 
-  // Step transitions
   const handleNextStep = async () => {
-    let fieldsToValidate: any[] = [];
-    if (step === 1) {
-      fieldsToValidate = ['fulfillment', 'date', 'slot'];
-      if (watchedFulfillment === 'delivery') {
-        fieldsToValidate.push('street', 'city', 'state', 'zip');
-      }
-    } else if (step === 2) {
-      fieldsToValidate = ['fullName', 'email', 'phone'];
-    }
-
-    const isStepValid = await trigger(fieldsToValidate);
-    if (isStepValid) {
-      if (step === 1 && watchedFulfillment) {
-        setFulfillmentType(watchedFulfillment);
-      }
-      setStep((prev) => prev + 1);
-    } else {
-      addToast('Please correct form errors before proceeding.', 'error');
-    }
+    let fields: any[] = [];
+    if (step === 1) fields = ['date', 'slot'];
+    else if (step === 2) fields = ['fullName', 'email', 'phone'];
+    const valid = await trigger(fields);
+    if (valid) setStep((p) => p + 1);
+    else addToast('Please correct form errors before proceeding.', 'error');
   };
 
-  const handlePrevStep = () => {
-    setStep((prev) => prev - 1);
-  };
-
-  // Form Submit — delegates item serialisation to api.ts (toCartItemSchema)
-  // so the backend always receives the correct CartItemSchema shape.
   const onSubmit = async (data: CheckoutFormValues) => {
     setIsSubmitting(true);
     try {
+      // Build address parts from the fulfillment store's saved address string
+      const addressParts = address ? address.split(',') : [];
+      const street = addressParts[0]?.trim() || '';
+      const city = addressParts[1]?.trim() || '';
+      const stateZip = addressParts[2]?.trim().split(' ') || [];
+      const state = stateZip[0] || '';
+      const zip = stateZip[1] || '';
+
       const res = await createOrder(cartItems, {
-        fulfillment: data.fulfillment,
-        street: data.street,
-        city: data.city,
-        state: data.state,
-        zip: data.zip,
+        fulfillment: orderType || 'pickup',
+        street,
+        city,
+        state,
+        zip,
         date: data.date,
         slot: data.slot,
         fullName: data.fullName,
@@ -194,7 +156,6 @@ export default function CheckoutPage() {
         notes: data.notes || '',
         paymentMethod: data.paymentMethod,
       });
-      console.log("Create Order Response:", res);
       clearCart();
       addToast('Order placed successfully!', 'success');
       router.push(`/order-confirmation/${res?.order_number || res?.id || ''}`);
@@ -222,35 +183,71 @@ export default function CheckoutPage() {
       {/* Page Title */}
       <div className="border-b border-border pb-4">
         <h1 className="font-heading text-3xl text-primary font-extrabold tracking-tight">Checkout</h1>
-        <p className="text-xs text-brown mt-1">Provide your fulfillment and contact details below.</p>
+        <p className="text-xs text-brown mt-1">Review your order and provide contact details.</p>
       </div>
 
-      {/* Progress Bar (1 -> 2 -> 3) */}
+      {/* Fulfillment Summary Banner */}
+      <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-cream/40">
+        <div className="flex items-center gap-3">
+          {orderType === 'delivery' ? (
+            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-accent/10 border border-accent/25">
+              <Truck className="h-4 w-4 text-accent" />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center w-9 h-9 rounded-full bg-emerald-500/10 border border-emerald-500/25">
+              <MapPin className="h-4 w-4 text-emerald-600" />
+            </div>
+          )}
+          <div>
+            <p className="font-cinzel text-xs font-bold text-primary-deep uppercase tracking-wider">
+              {orderType === 'delivery' ? 'Delivery' : 'Pickup'}
+            </p>
+            <p className="text-xs text-brown font-body mt-0.5">
+              {orderType === 'delivery' && address
+                ? address
+                : '11920 S Texas 6, Unit 1280, Sugar Land, TX 77498'}
+            </p>
+            {orderType === 'delivery' && drivingDistanceMiles !== null && (
+              <p className="text-[10px] text-brown/70 font-body">
+                {drivingDistanceMiles.toFixed(1)} miles · Delivery fee: {getDeliveryFeeDisplay()}
+              </p>
+            )}
+          </div>
+        </div>
+        <button
+          onClick={openModal}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-white hover:border-primary/40 transition-colors text-xs font-cinzel font-semibold text-primary-deep uppercase tracking-wider"
+        >
+          <Edit2 className="h-3 w-3" />
+          Change
+        </button>
+      </div>
+
+      {/* Progress Bar */}
       <div className="max-w-md mx-auto">
         <div className="flex items-center justify-between relative">
-          {/* Connector Line */}
           <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 bg-border -z-10" />
           <div
             className="absolute left-0 top-1/2 -translate-y-1/2 h-0.5 bg-primary transition-all duration-350 -z-10"
             style={{ width: `${((step - 1) / 2) * 100}%` }}
           />
-
           {[
-            { stepNum: 1, label: 'Fulfillment' },
+            { stepNum: 1, label: 'Schedule' },
             { stepNum: 2, label: 'Contact' },
-            { stepNum: 3, label: 'Payment' }
+            { stepNum: 3, label: 'Payment' },
           ].map((s) => {
             const isCompleted = step > s.stepNum;
             const isActive = step === s.stepNum;
             return (
               <div key={s.stepNum} className="flex flex-col items-center space-y-2">
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center font-cinzel text-xs font-bold border-2 transition-all duration-300 ${isCompleted
-                    ? 'bg-primary border-primary text-white'
-                    : isActive
+                  className={`w-8 h-8 rounded-full flex items-center justify-center font-cinzel text-xs font-bold border-2 transition-all duration-300 ${
+                    isCompleted
+                      ? 'bg-primary border-primary text-white'
+                      : isActive
                       ? 'bg-cream border-primary text-primary'
                       : 'bg-white border-border text-brown'
-                    }`}
+                  }`}
                 >
                   {isCompleted ? <Check className="h-4 w-4" /> : s.stepNum}
                 </div>
@@ -265,321 +262,166 @@ export default function CheckoutPage() {
 
       {/* Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        {/* Left Column: Checkout Wizard (Col-span 2) */}
+        {/* Left: Wizard */}
         <div className="lg:col-span-2 bg-white rounded-xl border border-border p-6 sm:p-8 shadow-sm">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* STEP 1: FULFILLMENT */}
+
+            {/* STEP 1: SCHEDULE */}
             {step === 1 && (
               <div className="space-y-6">
                 <h2 className="font-cinzel text-sm uppercase tracking-wider text-primary font-bold border-b border-border pb-2.5">
-                  Fulfillment Choice
+                  Schedule Fulfillment
                 </h2>
-
-                {/* Toggle tab */}
-                <div className="grid grid-cols-2 gap-3 p-1 bg-cream/40 rounded-lg border border-border">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setValue('fulfillment', 'pickup');
-                      setFulfillmentType('pickup');
-                    }}
-                    className={`py-3 text-xs font-cinzel uppercase font-semibold rounded-md flex items-center justify-center space-x-2 transition-all ${watchedFulfillment === 'pickup'
-                      ? 'bg-primary text-cream shadow-sm'
-                      : 'text-primary hover:bg-cream/70'
-                      }`}
-                  >
-                    <MapPin className="h-4 w-4" />
-                    <span>Contactless Pickup</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setValue('fulfillment', 'delivery');
-                      setFulfillmentType('delivery');
-                    }}
-                    className={`py-3 text-xs font-cinzel uppercase font-semibold rounded-md flex items-center justify-center space-x-2 transition-all ${watchedFulfillment === 'delivery'
-                      ? 'bg-primary text-cream shadow-sm'
-                      : 'text-primary hover:bg-cream/70'
-                      }`}
-                  >
-                    <Truck className="h-4 w-4" />
-                    <span>Local Delivery</span>
-                  </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1.5">Preferred Date</label>
+                    <input
+                      type="date"
+                      min={getMinDate()}
+                      {...register('date')}
+                      className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                    />
+                    {errors.date && <span className="text-[10px] text-red-600 block mt-1">{errors.date.message}</span>}
+                  </div>
+                  <div>
+                    <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1.5">Preferred Time Slot</label>
+                    <select
+                      {...register('slot')}
+                      className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep focus:outline-none"
+                    >
+                      <option value="Morning">Morning (10:00 AM – 1:00 PM)</option>
+                      <option value="Afternoon">Afternoon (1:00 PM – 5:00 PM)</option>
+                      <option value="Evening">Evening (5:00 PM – 8:00 PM)</option>
+                    </select>
+                    {errors.slot && <span className="text-[10px] text-red-600 block mt-1">{errors.slot.message}</span>}
+                  </div>
                 </div>
 
-                {/* Delivery Address fields */}
-                {watchedFulfillment === 'delivery' && (
-                  <div className="space-y-4 pt-2">
-                    <h3 className="font-cinzel text-xs uppercase tracking-wider text-brown font-bold">Delivery Address</h3>
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1.5">Street Address</label>
-                        <input
-                          type="text"
-                          {...register('street')}
-                          className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep placeholder-brown/40 focus:outline-none focus:ring-1 focus:ring-primary"
-                          placeholder="123 Sweet Lane"
-                        />
-                        {errors.street && <span className="text-[10px] text-red-600 block mt-1">{errors.street.message}</span>}
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-3">
-                        <div className="col-span-1.5">
-                          <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1.5">City</label>
-                          <input
-                            type="text"
-                            {...register('city')}
-                            className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep focus:outline-none"
-                            placeholder="Brooklyn"
-                          />
-                          {errors.city && <span className="text-[10px] text-red-600 block mt-1">{errors.city.message}</span>}
-                        </div>
-                        <div>
-                          <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1.5">State</label>
-                          <input
-                            type="text"
-                            {...register('state')}
-                            className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep focus:outline-none"
-                            placeholder="NY"
-                          />
-                          {errors.state && <span className="text-[10px] text-red-600 block mt-1">{errors.state.message}</span>}
-                        </div>
-                        <div>
-                          <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1.5">ZIP Code</label>
-                          <input
-                            type="text"
-                            {...register('zip')}
-                            className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep focus:outline-none"
-                            placeholder="11218"
-                          />
-                          {errors.zip && <span className="text-[10px] text-red-600 block mt-1">{errors.zip.message}</span>}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Pickup Info Banner */}
-                {watchedFulfillment === 'pickup' && (
+                {/* Pickup info banner */}
+                {orderType === 'pickup' && (
                   <div className="p-4 bg-blush/40 border border-border rounded-xl space-y-2">
                     <h3 className="font-cinzel text-xs uppercase tracking-wider text-primary-deep font-bold flex items-center">
                       <MapPin className="h-4 w-4 mr-2 text-accent" />
-                      <span>Pickup Address</span>
+                      Pickup Address
                     </h3>
                     <p className="text-xs text-primary-deep leading-relaxed font-body">
-                      Murad Sweets Kitchen: **Houston, Texas 77055** <br />
-                      Pickup is completely contact-free. The exact house address and detailed collection instructions will be shared in your confirmation email and SMS once we review the order schedule.
+                      <strong>Murad Sweets:</strong> 11920 S Texas 6, Unit 1280, Sugar Land, TX 77498<br />
+                      Pickup is completely contact-free. Exact instructions will be shared in your confirmation email.
                     </p>
                   </div>
                 )}
 
-                {/* Date & Time Picker */}
-                <div className="space-y-4 pt-2">
-                  <h3 className="font-cinzel text-xs uppercase tracking-wider text-brown font-bold">Schedule Fulfillment</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1.5">Preferred Date</label>
-                      <input
-                        type="date"
-                        min={getMinDate()}
-                        {...register('date')}
-                        className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer"
-                      />
-                      {errors.date && <span className="text-[10px] text-red-600 block mt-1">{errors.date.message}</span>}
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1.5">Preferred Time Slot</label>
-                      <select
-                        {...register('slot')}
-                        className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep focus:outline-none"
-                      >
-                        <option value="Morning">Morning (10:00 AM – 1:00 PM)</option>
-                        <option value="Afternoon">Afternoon (1:00 PM – 5:00 PM)</option>
-                        <option value="Evening">Evening (5:00 PM – 8:00 PM)</option>
-                      </select>
-                      {errors.slot && <span className="text-[10px] text-red-600 block mt-1">{errors.slot.message}</span>}
-                    </div>
+                {/* Delivery confirmation banner */}
+                {orderType === 'delivery' && address && (
+                  <div className="p-4 bg-blush/40 border border-border rounded-xl space-y-1">
+                    <h3 className="font-cinzel text-xs uppercase tracking-wider text-primary-deep font-bold flex items-center">
+                      <Truck className="h-4 w-4 mr-2 text-accent" />
+                      Delivering To
+                    </h3>
+                    <p className="text-xs text-primary-deep font-body">{address}</p>
+                    {drivingDistanceMiles !== null && (
+                      <p className="text-[10px] text-brown font-body">
+                        Distance: {drivingDistanceMiles.toFixed(1)} miles · Fee: {getDeliveryFeeDisplay()}
+                      </p>
+                    )}
                   </div>
-                </div>
+                )}
               </div>
             )}
 
-            {/* STEP 2: CONTACT DETAILS */}
+            {/* STEP 2: CONTACT */}
             {step === 2 && (
               <div className="space-y-6">
                 <h2 className="font-cinzel text-sm uppercase tracking-wider text-primary font-bold border-b border-border pb-2.5">
                   Contact Details
                 </h2>
-
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
                     <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1.5">Full Name</label>
-                    <input
-                      type="text"
-                      {...register('fullName')}
-                      className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep focus:outline-none"
-                      placeholder="Anisur Rahman"
-                    />
+                    <input type="text" {...register('fullName')} className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep focus:outline-none" placeholder="Anisur Rahman" />
                     {errors.fullName && <span className="text-[10px] text-red-600 block mt-1">{errors.fullName.message}</span>}
                   </div>
-
                   <div>
                     <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1.5">Email Address</label>
-                    <input
-                      type="email"
-                      {...register('email')}
-                      className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep focus:outline-none"
-                      placeholder="anis@example.com"
-                    />
+                    <input type="email" {...register('email')} className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep focus:outline-none" placeholder="anis@example.com" />
                     {errors.email && <span className="text-[10px] text-red-600 block mt-1">{errors.email.message}</span>}
                   </div>
-
                   <div>
                     <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1.5">Phone Number</label>
-                    <input
-                      type="tel"
-                      {...register('phone')}
-                      className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep focus:outline-none"
-                      placeholder="(346) 368-4831"
-                    />
+                    <input type="tel" {...register('phone')} className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep focus:outline-none" placeholder="(346) 368-4831" />
                     {errors.phone && <span className="text-[10px] text-red-600 block mt-1">{errors.phone.message}</span>}
                   </div>
-
                   <div className="sm:col-span-2">
-                    <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1.5">
-                      Order Notes & Special Instructions (Optional)
-                    </label>
-                    <textarea
-                      rows={3}
-                      {...register('notes')}
-                      className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep focus:outline-none"
-                      placeholder="Specify dietary warnings, custom box arrangement preferences, or pickup time specifics..."
-                    />
+                    <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1.5">Order Notes (Optional)</label>
+                    <textarea rows={3} {...register('notes')} className="w-full text-xs bg-cream/20 border border-border rounded-md p-2.5 text-primary-deep focus:outline-none" placeholder="Dietary warnings, custom preferences..." />
                   </div>
                 </div>
               </div>
             )}
 
-            {/* STEP 3: PAYMENT METHOD */}
+            {/* STEP 3: PAYMENT */}
             {step === 3 && (
               <div className="space-y-6">
                 <h2 className="font-cinzel text-sm uppercase tracking-wider text-primary font-bold border-b border-border pb-2.5">
                   Secure Payment Method
                 </h2>
-
-                {/* Selector */}
                 <div className="grid grid-cols-2 gap-3 p-1 bg-cream/40 rounded-lg border border-border">
-                  <button
-                    type="button"
-                    onClick={() => setValue('paymentMethod', 'cod')}
-                    className={`py-3 text-xs font-cinzel uppercase font-semibold rounded-md flex items-center justify-center space-x-2 transition-all ${watchedPayment === 'cod'
-                      ? 'bg-primary text-cream shadow-sm'
-                      : 'text-primary hover:bg-cream/70'
-                      }`}
-                  >
-                    <DollarSign className="h-4 w-4" />
-                    <span>Cash on Delivery (COD)</span>
+                  <button type="button" onClick={() => setValue('paymentMethod', 'cod')}
+                    className={`py-3 text-xs font-cinzel uppercase font-semibold rounded-md flex items-center justify-center space-x-2 transition-all ${watchedPayment === 'cod' ? 'bg-primary text-cream shadow-sm' : 'text-primary hover:bg-cream/70'}`}>
+                    <DollarSign className="h-4 w-4" /><span>Cash on Delivery</span>
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setValue('paymentMethod', 'card')}
-                    className={`py-3 text-xs font-cinzel uppercase font-semibold rounded-md flex items-center justify-center space-x-2 transition-all ${watchedPayment === 'card'
-                      ? 'bg-primary text-cream shadow-sm'
-                      : 'text-primary hover:bg-cream/70'
-                      }`}
-                  >
-                    <CreditCard className="h-4 w-4" />
-                    <span>Credit / Debit Card</span>
+                  <button type="button" onClick={() => setValue('paymentMethod', 'card')}
+                    className={`py-3 text-xs font-cinzel uppercase font-semibold rounded-md flex items-center justify-center space-x-2 transition-all ${watchedPayment === 'card' ? 'bg-primary text-cream shadow-sm' : 'text-primary hover:bg-cream/70'}`}>
+                    <CreditCard className="h-4 w-4" /><span>Credit / Debit Card</span>
                   </button>
                 </div>
 
-                {/* Card Fields (Mock Stripe Elements) */}
                 {watchedPayment === 'card' && (
                   <div className="p-5 border border-border rounded-xl bg-cream/10 space-y-4">
-                    <div className="flex items-center justify-between border-b border-border pb-2.5">
-                      <span className="font-cinzel text-[11px] uppercase tracking-wider text-primary-deep font-bold flex items-center">
-                        <CreditCard className="h-4 w-4 mr-2 text-accent" />
-                        <span>Stripe Secured Card Information</span>
-                      </span>
-                      <Image
-                        src="/murad-logo.jpg"
-                        alt="Stripe logo placeholder"
-                        width={60}
-                        height={20}
-                        className="opacity-50"
-                      />
+                    <div className="flex items-center gap-2 border-b border-border pb-2.5">
+                      <CreditCard className="h-4 w-4 text-accent" />
+                      <span className="font-cinzel text-[11px] uppercase tracking-wider text-primary-deep font-bold">Stripe Secured Payment</span>
                     </div>
-
-                    <div className="space-y-3">
+                    <div>
+                      <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1">Card Number</label>
+                      <input type="text" maxLength={19} {...register('cardNumber')}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+                          const parts = [];
+                          for (let i = 0; i < value.length; i += 4) parts.push(value.substring(i, i + 4));
+                          setValue('cardNumber', parts.join(' '));
+                        }}
+                        className="w-full text-xs bg-white border border-border rounded p-2.5 text-primary-deep focus:outline-none" placeholder="4242 4242 4242 4242" />
+                      {errors.cardNumber && <span className="text-[10px] text-red-600 block mt-1">{errors.cardNumber.message}</span>}
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1">Card Number</label>
-                        <input
-                          type="text"
-                          maxLength={19}
-                          {...register('cardNumber')}
+                        <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1">Expiry</label>
+                        <input type="text" maxLength={5} {...register('cardExpiry')}
                           onChange={(e) => {
-                            // format card with spaces
-                            const value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-                            const matches = value.match(/\d{4,16}/g);
-                            const match = (matches && matches[0]) || '';
-                            const parts = [];
-                            for (let i = 0, len = match.length; i < len; i += 4) {
-                              parts.push(match.substring(i, i + 4));
-                            }
-                            setValue('cardNumber', parts.length > 0 ? parts.join(' ') : value);
+                            let val = e.target.value.replace(/\D/g, '');
+                            if (val.length > 2) val = `${val.substring(0, 2)}/${val.substring(2, 4)}`;
+                            setValue('cardExpiry', val);
                           }}
-                          className="w-full text-xs bg-white border border-border rounded p-2.5 text-primary-deep focus:outline-none"
-                          placeholder="4242 4242 4242 4242"
-                        />
-                        {errors.cardNumber && <span className="text-[10px] text-red-600 block mt-1">{errors.cardNumber.message}</span>}
+                          className="w-full text-xs bg-white border border-border rounded p-2.5 text-primary-deep focus:outline-none" placeholder="MM/YY" />
+                        {errors.cardExpiry && <span className="text-[10px] text-red-600 block mt-1">{errors.cardExpiry.message}</span>}
                       </div>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1">Expiry Date</label>
-                          <input
-                            type="text"
-                            maxLength={5}
-                            {...register('cardExpiry')}
-                            onChange={(e) => {
-                              // format MM/YY
-                              let val = e.target.value.replace(/\D/g, '');
-                              if (val.length > 2) {
-                                val = `${val.substring(0, 2)}/${val.substring(2, 4)}`;
-                              }
-                              setValue('cardExpiry', val);
-                            }}
-                            className="w-full text-xs bg-white border border-border rounded p-2.5 text-primary-deep focus:outline-none"
-                            placeholder="MM/YY"
-                          />
-                          {errors.cardExpiry && <span className="text-[10px] text-red-600 block mt-1">{errors.cardExpiry.message}</span>}
-                        </div>
-
-                        <div>
-                          <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1">CVC / CVV</label>
-                          <input
-                            type="password"
-                            maxLength={4}
-                            {...register('cardCvc')}
-                            className="w-full text-xs bg-white border border-border rounded p-2.5 text-primary-deep focus:outline-none"
-                            placeholder="123"
-                          />
-                          {errors.cardCvc && <span className="text-[10px] text-red-600 block mt-1">{errors.cardCvc.message}</span>}
-                        </div>
+                      <div>
+                        <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1">CVC</label>
+                        <input type="password" maxLength={4} {...register('cardCvc')} className="w-full text-xs bg-white border border-border rounded p-2.5 text-primary-deep focus:outline-none" placeholder="123" />
+                        {errors.cardCvc && <span className="text-[10px] text-red-600 block mt-1">{errors.cardCvc.message}</span>}
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* COD Details */}
                 {watchedPayment === 'cod' && (
                   <div className="p-4 bg-blush/40 border border-border rounded-xl flex items-start space-x-3">
                     <DollarSign className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                     <div>
                       <h4 className="font-cinzel text-xs font-bold text-primary-deep uppercase">Pay on Delivery/Pickup</h4>
                       <p className="text-[11px] text-brown leading-relaxed font-body mt-0.5">
-                        No immediate card payment is required. You can pay using cash, Zelle, or Venmo upon collecting your box or when we deliver the order.
+                        No immediate card payment required. Pay using cash, Zelle, or Venmo on collection or delivery.
                       </p>
                     </div>
                   </div>
@@ -587,38 +429,21 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            {/* Navigation buttons */}
+            {/* Navigation */}
             <div className="pt-6 border-t border-border flex justify-between items-center">
               {step > 1 ? (
-                <button
-                  type="button"
-                  onClick={handlePrevStep}
-                  className="inline-flex items-center text-xs font-cinzel font-bold text-brown hover:text-primary transition-all duration-200"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-1.5" />
-                  <span>Previous</span>
+                <button type="button" onClick={() => setStep((p) => p - 1)} className="inline-flex items-center text-xs font-cinzel font-bold text-brown hover:text-primary transition-all">
+                  <ArrowLeft className="h-4 w-4 mr-1.5" />Previous
                 </button>
-              ) : (
-                <div />
-              )}
-
+              ) : <div />}
               {step < 3 ? (
-                <button
-                  type="button"
-                  onClick={handleNextStep}
-                  className="btn-gold py-2.5 px-6 text-xs uppercase tracking-widest flex items-center space-x-2"
-                >
-                  <span>Continue</span>
-                  <ArrowRight className="h-4 w-4" />
+                <button type="button" onClick={handleNextStep} className="btn-gold py-2.5 px-6 text-xs uppercase tracking-widest flex items-center space-x-2">
+                  <span>Continue</span><ArrowRight className="h-4 w-4" />
                 </button>
               ) : (
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={`btn-gold py-3 px-8 text-xs uppercase tracking-widest flex items-center space-x-2 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-                    }`}
-                >
-                  <span>{isSubmitting ? 'Processing Order...' : 'Place Order'}</span>
+                <button type="submit" disabled={isSubmitting}
+                  className={`btn-gold py-3 px-8 text-xs uppercase tracking-widest flex items-center space-x-2 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                  <span>{isSubmitting ? 'Processing...' : 'Place Order'}</span>
                   {!isSubmitting && <ArrowRight className="h-4 w-4 text-accent" />}
                 </button>
               )}
@@ -626,15 +451,11 @@ export default function CheckoutPage() {
           </form>
         </div>
 
-        {/* Right Column: Order Summary Sidebar */}
+        {/* Right: Order Summary */}
         <div className="bg-cream/40 border border-border rounded-xl p-5 sm:p-6 space-y-4">
           <div className="flex items-center justify-between border-b border-border pb-2.5">
-            <h2 className="font-cinzel text-xs uppercase tracking-wider text-primary-deep font-bold">
-              Order Items
-            </h2>
-            {isQuoting && (
-              <Loader2 className="h-3.5 w-3.5 text-primary animate-spin" />
-            )}
+            <h2 className="font-cinzel text-xs uppercase tracking-wider text-primary-deep font-bold">Order Summary</h2>
+            {isQuoting && <Loader2 className="h-3.5 w-3.5 text-primary animate-spin" />}
           </div>
 
           <div className="divide-y divide-border/60 max-h-72 overflow-y-auto no-scrollbar">
@@ -642,13 +463,9 @@ export default function CheckoutPage() {
               <div key={item.cartItemId} className="py-3 flex space-x-3 items-center justify-between text-xs">
                 <div className="min-w-0 pr-2">
                   <p className="font-cinzel font-semibold text-primary-deep truncate">{item.name}</p>
-                  <p className="text-[10px] text-brown font-body">
-                    {item.quantity}x {item.unit || 'per unit'}
-                  </p>
+                  <p className="text-[10px] text-brown font-body">{item.quantity}x {item.unit || 'per unit'}</p>
                 </div>
-                <span className="font-cinzel font-bold text-primary-deep flex-shrink-0">
-                  ${(item.price * item.quantity).toFixed(2)}
-                </span>
+                <span className="font-cinzel font-bold text-primary-deep flex-shrink-0">${(item.price * item.quantity).toFixed(2)}</span>
               </div>
             ))}
           </div>
@@ -658,21 +475,18 @@ export default function CheckoutPage() {
               <span className="text-brown">Subtotal</span>
               <span className="font-cinzel font-bold text-primary-deep">${subtotal.toFixed(2)}</span>
             </div>
-
             <div className="flex justify-between items-center">
-              <span className="text-brown">Delivery fee</span>
-              <span className="font-cinzel font-bold text-primary-deep capitalize">
-                {watchedFulfillment === 'delivery' ? `$${deliveryFee.toFixed(2)}` : 'Free'}
+              <span className="text-brown">Delivery Fee</span>
+              <span className={`font-cinzel font-bold ${orderType === 'delivery' && deliveryFee > 0 ? 'text-primary-deep' : 'text-emerald-600'}`}>
+                {getDeliveryFeeDisplay()}
               </span>
             </div>
-
             {quote && (
               <div className="flex justify-between items-center">
                 <span className="text-brown">Tax</span>
                 <span className="font-cinzel font-bold text-primary-deep">${(quote.tax_cents / 100).toFixed(2)}</span>
               </div>
             )}
-
             <div className="flex justify-between items-center border-t border-border pt-3">
               <span className="font-cinzel font-bold text-primary-deep">Grand Total</span>
               <span className="font-cinzel text-base text-primary font-bold">

@@ -9,14 +9,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '@/app/store/useCart';
 import { useCatalog } from '@/app/store/useCatalog';
 
-// ─── Category definitions (no "All") ─────────────────────────────────────────
-const CATEGORY_PILLS: { id: string; label: string; filterKey: string }[] = [
-  { id: 'dry-sweets',        label: 'Mix & Match',       filterKey: 'dry-sweets' },
-  { id: 'party-trays',       label: 'Party Trays',       filterKey: 'party-trays' },
-  { id: 'specialty',         label: 'Specialty Items',   filterKey: 'specialty' },
-  { id: 'pitha',             label: 'Traditional Pitha', filterKey: 'pitha' },
-  { id: 'mishti-per-pound',  label: 'Mishti Per Pound',  filterKey: 'mishti-per-pound' },
-];
+// Dynamic category pills will be generated inside the component
 
 // ─── Product Quick Modal ──────────────────────────────────────────────────────
 function ProductQuickModal({
@@ -270,7 +263,16 @@ function CatalogContent() {
   const isScrollingRef = useRef(false);
 
   const { openCollectionModal } = useCart();
-  const { products: PRODUCTS, fetchCatalog, isLoading } = useCatalog();
+  const { products: PRODUCTS, categories, fetchCatalog, isLoading } = useCatalog();
+
+  const CATEGORY_PILLS = categories
+    .filter((c: any) => c.is_active)
+    .sort((a: any, b: any) => a.sort_order - b.sort_order)
+    .map((c: any) => ({
+      id: c.slug,
+      label: c.name,
+      filterKey: c.slug
+    }));
 
   useEffect(() => {
     fetchCatalog();
@@ -278,10 +280,15 @@ function CatalogContent() {
 
   // Sync active tab from URL on load
   useEffect(() => {
+    if (CATEGORY_PILLS.length === 0) return;
     const urlCategory = searchParams.get('category');
     const match = CATEGORY_PILLS.find((p) => p.filterKey === urlCategory);
-    setActiveTab(match ? match.id : 'dry-sweets');
-  }, [searchParams]);
+    
+    // Only update if current activeTab is invalid or url changed
+    if (!activeTab || !CATEGORY_PILLS.find(p => p.id === activeTab) || urlCategory) {
+      setActiveTab(match ? match.id : CATEGORY_PILLS[0].id);
+    }
+  }, [searchParams, CATEGORY_PILLS.length]);
 
   // Scroll the MOBILE pill bar so the active pill is centered — uses mobilePillsRef only
   useEffect(() => {

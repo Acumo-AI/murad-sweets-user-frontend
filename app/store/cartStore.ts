@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Product } from '@/app/data/products';
+import { useFulfillmentStore } from './fulfillmentStore';
 
 export type MixMatchBox = {
   size: 3 | 6 | 9;
@@ -230,8 +231,10 @@ export const useCartStore = create<CartState>()(
         return get().cartItems.reduce((acc, item) => acc + item.quantity, 0);
       },
       getDeliveryFee: () => {
-        // Flat fee $5 for delivery, $0 for pickup
-        return get().fulfillment === 'delivery' ? 5 : 0;
+        // Delegate to the fulfillment store — it is the single source of truth
+        const { orderType, deliveryFeeCents } = useFulfillmentStore.getState();
+        if (orderType === 'pickup') return 0;
+        return deliveryFeeCents !== null ? deliveryFeeCents / 100 : 0;
       },
       getCartTotal: () => {
         return get().getCartSubtotal() + get().getDeliveryFee();
