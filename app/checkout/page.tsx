@@ -13,6 +13,12 @@ import { useCart } from '@/app/store/useCart';
 import { useFulfillmentStore } from '@/app/store/fulfillmentStore';
 import { getCartQuote, createOrder } from '@/app/lib/api';
 import Image from 'next/image';
+import { Elements, useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+
+// Make sure to call `loadStripe` outside of a component’s render to avoid
+// recreating the `Stripe` object on every render.
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder');
 
 // ─── Validation Schema (simplified — address is now pre-set by fulfillment store) ─
 const checkoutSchema = z.object({
@@ -23,27 +29,14 @@ const checkoutSchema = z.object({
   phone: z.string().min(10, 'Phone number must be at least 10 digits'),
   notes: z.string().optional(),
   paymentMethod: z.enum(['card', 'cod']),
-  cardNumber: z.string().optional(),
-  cardExpiry: z.string().optional(),
-  cardCvc: z.string().optional(),
-}).superRefine((data, ctx) => {
-  if (data.paymentMethod === 'card') {
-    if (!data.cardNumber || data.cardNumber.replace(/\s/g, '').length < 16) {
-      ctx.addIssue({ code: 'custom', message: 'Enter a valid 16-digit card number', path: ['cardNumber'] });
-    }
-    if (!data.cardExpiry || !/^\d{2}\/\d{2}$/.test(data.cardExpiry)) {
-      ctx.addIssue({ code: 'custom', message: 'Use MM/YY format', path: ['cardExpiry'] });
-    }
-    if (!data.cardCvc || data.cardCvc.length < 3) {
-      ctx.addIssue({ code: 'custom', message: 'CVC must be at least 3 digits', path: ['cardCvc'] });
-    }
-  }
 });
 
 type CheckoutFormValues = z.infer<typeof checkoutSchema>;
 
-export default function CheckoutPage() {
+function CheckoutForm() {
   const router = useRouter();
+  const stripe = useStripe();
+  const elements = useElements();
   const { cartItems, getCartSubtotal, clearCart, addToast } = useCart();
 
   // ── Fulfillment store (single source of truth) ──
@@ -65,11 +58,12 @@ export default function CheckoutPage() {
     tax_cents: number;
     total_cents: number;
   } | null>(null);
+  const [pendingPayment, setPendingPayment] = useState<{ clientSecret: string; orderNumber: string } | null>(null);
 
   // ── Computed totals (prefer server quote, fall back to local) ──
   const subtotal = quote ? quote.subtotal_cents / 100 : getCartSubtotal();
   const deliveryFee = deliveryFeeCents !== null ? deliveryFeeCents / 100 : 0;
-  const total = subtotal + (orderType === 'delivery' ? deliveryFee : 0);
+  const total = quote ? quote.total_cents / 100 : (subtotal + (orderType === 'delivery' ? deliveryFee : 0));
 
   // ── Form ──
   const {
@@ -90,9 +84,6 @@ export default function CheckoutPage() {
       phone: '',
       notes: '',
       paymentMethod: 'cod',
-      cardNumber: '',
-      cardExpiry: '',
-      cardCvc: '',
     },
   });
 
@@ -132,6 +123,14 @@ export default function CheckoutPage() {
   };
 
   const onSubmit = async (data: CheckoutFormValues) => {
+    if (step !== 3) {
+      handleNextStep();
+      return;
+    }
+
+    if (data.paymentMethod === 'card' && !stripe) {
+      return;
+    }
     setIsSubmitting(true);
     try {
       // Build address parts from the fulfillment store's saved address string
@@ -142,25 +141,60 @@ export default function CheckoutPage() {
       const state = stateZip[0] || '';
       const zip = stateZip[1] || '';
 
-      const res = await createOrder(cartItems, {
-        fulfillment: orderType || 'pickup',
-        street,
-        city,
-        state,
-        zip,
-        date: data.date,
-        slot: data.slot,
-        fullName: data.fullName,
-        email: data.email,
-        phone: data.phone,
-        notes: data.notes || '',
-        paymentMethod: data.paymentMethod,
-      });
+      let clientSecret = pendingPayment?.clientSecret;
+      let orderNumber = pendingPayment?.orderNumber;
+
+      // Only create a new order if we haven't already created one for this session
+      if (!clientSecret || !orderNumber) {
+        const res = await createOrder(cartItems, {
+          fulfillment: orderType || 'pickup',
+          street,
+          city,
+          state,
+          zip,
+          date: data.date,
+          slot: data.slot,
+          fullName: data.fullName,
+          email: data.email,
+          phone: data.phone,
+          notes: data.notes || '',
+          paymentMethod: data.paymentMethod,
+        });
+        
+        clientSecret = res.client_secret;
+        orderNumber = res.order_number || res.id;
+        
+        if (data.paymentMethod === 'card' && clientSecret) {
+          setPendingPayment({ clientSecret, orderNumber });
+        }
+      }
+
+      if (data.paymentMethod === 'card' && clientSecret) {
+        const cardElement = elements?.getElement(CardElement);
+        if (!cardElement) throw new Error("Stripe not initialized");
+        
+        const { error, paymentIntent } = await stripe!.confirmCardPayment(clientSecret, {
+          payment_method: {
+            card: cardElement,
+            billing_details: {
+              name: data.fullName,
+              email: data.email,
+            }
+          }
+        });
+        
+        if (error) {
+          throw new Error(error.message); // This throws so we don't redirect, but we keep the pendingPayment state
+        }
+      }
+
+      // Success
+      setPendingPayment(null);
       clearCart();
       addToast('Order placed successfully!', 'success');
-      router.push(`/order-confirmation/${res?.order_number || res?.id || ''}`);
+      router.push(`/order-confirmation/${orderNumber || ''}`);
     } catch (err: any) {
-      addToast(err.response?.data?.detail || 'Failed to place order. Please try again.', 'error');
+      addToast(err.response?.data?.detail || err.message || 'Failed to place order. Please try again.', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -264,8 +298,15 @@ export default function CheckoutPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Left: Wizard */}
         <div className="lg:col-span-2 bg-white rounded-xl border border-border p-6 sm:p-8 shadow-sm">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && (e.target as HTMLElement).tagName !== 'TEXTAREA') {
+                e.preventDefault();
+              }
+            }}
+            className="space-y-6"
+          >
             {/* STEP 1: SCHEDULE */}
             {step === 1 && (
               <div className="space-y-6">
@@ -380,37 +421,26 @@ export default function CheckoutPage() {
                   <div className="p-5 border border-border rounded-xl bg-cream/10 space-y-4">
                     <div className="flex items-center gap-2 border-b border-border pb-2.5">
                       <CreditCard className="h-4 w-4 text-accent" />
-                      <span className="font-cinzel text-[11px] uppercase tracking-wider text-primary-deep font-bold">Stripe Secured Payment</span>
+                      <span className="font-cinzel text-[11px] uppercase tracking-wider text-primary-deep font-bold">Stripe Secured Card Information</span>
                     </div>
-                    <div>
-                      <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1">Card Number</label>
-                      <input type="text" maxLength={19} {...register('cardNumber')}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-                          const parts = [];
-                          for (let i = 0; i < value.length; i += 4) parts.push(value.substring(i, i + 4));
-                          setValue('cardNumber', parts.join(' '));
+                    <div className="bg-white border border-border rounded-md p-3.5">
+                      <CardElement 
+                        options={{
+                          style: {
+                            base: {
+                              fontSize: '14px',
+                              color: '#342318',
+                              '::placeholder': {
+                                color: '#a89f91',
+                              },
+                              fontFamily: 'Inter, system-ui, sans-serif'
+                            },
+                            invalid: {
+                              color: '#dc2626',
+                            },
+                          },
                         }}
-                        className="w-full text-xs bg-white border border-border rounded p-2.5 text-primary-deep focus:outline-none" placeholder="4242 4242 4242 4242" />
-                      {errors.cardNumber && <span className="text-[10px] text-red-600 block mt-1">{errors.cardNumber.message}</span>}
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1">Expiry</label>
-                        <input type="text" maxLength={5} {...register('cardExpiry')}
-                          onChange={(e) => {
-                            let val = e.target.value.replace(/\D/g, '');
-                            if (val.length > 2) val = `${val.substring(0, 2)}/${val.substring(2, 4)}`;
-                            setValue('cardExpiry', val);
-                          }}
-                          className="w-full text-xs bg-white border border-border rounded p-2.5 text-primary-deep focus:outline-none" placeholder="MM/YY" />
-                        {errors.cardExpiry && <span className="text-[10px] text-red-600 block mt-1">{errors.cardExpiry.message}</span>}
-                      </div>
-                      <div>
-                        <label className="block text-[10px] uppercase font-cinzel font-semibold text-brown mb-1">CVC</label>
-                        <input type="password" maxLength={4} {...register('cardCvc')} className="w-full text-xs bg-white border border-border rounded p-2.5 text-primary-deep focus:outline-none" placeholder="123" />
-                        {errors.cardCvc && <span className="text-[10px] text-red-600 block mt-1">{errors.cardCvc.message}</span>}
-                      </div>
+                      />
                     </div>
                   </div>
                 )}
@@ -441,7 +471,7 @@ export default function CheckoutPage() {
                   <span>Continue</span><ArrowRight className="h-4 w-4" />
                 </button>
               ) : (
-                <button type="submit" disabled={isSubmitting}
+                <button type="button" disabled={isSubmitting} onClick={handleSubmit(onSubmit)}
                   className={`btn-gold py-3 px-8 text-xs uppercase tracking-widest flex items-center space-x-2 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
                   <span>{isSubmitting ? 'Processing...' : 'Place Order'}</span>
                   {!isSubmitting && <ArrowRight className="h-4 w-4 text-accent" />}
@@ -497,5 +527,13 @@ export default function CheckoutPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Elements stripe={stripePromise}>
+      <CheckoutForm />
+    </Elements>
   );
 }
