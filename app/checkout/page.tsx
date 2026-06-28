@@ -63,7 +63,7 @@ function CheckoutForm() {
   // ── Computed totals (prefer server quote, fall back to local) ──
   const subtotal = quote ? quote.subtotal_cents / 100 : getCartSubtotal();
   const deliveryFee = deliveryFeeCents !== null ? deliveryFeeCents / 100 : 0;
-  const total = quote ? quote.total_cents / 100 : (subtotal + (orderType === 'delivery' ? deliveryFee : 0));
+  const total = subtotal + (orderType === 'delivery' ? deliveryFee : 0) + (quote ? quote.tax_cents / 100 : 0);
 
   // ── Form ──
   const {
@@ -159,6 +159,7 @@ function CheckoutForm() {
           phone: data.phone,
           notes: data.notes || '',
           paymentMethod: data.paymentMethod,
+          deliveryFeeCents: orderType === 'delivery' ? deliveryFeeCents || 0 : 0,
         });
 
         clientSecret = res.client_secret;
@@ -510,12 +511,12 @@ function CheckoutForm() {
                 {getDeliveryFeeDisplay()}
               </span>
             </div>
-            {quote && (
+            {/* {quote && (
               <div className="flex justify-between items-center">
                 <span className="text-brown">Tax</span>
                 <span className="font-cinzel font-bold text-primary-deep">${(quote.tax_cents / 100).toFixed(2)}</span>
               </div>
-            )}
+            )} */}
             <div className="flex justify-between items-center border-t border-border pt-3">
               <span className="font-cinzel font-bold text-primary-deep">Grand Total</span>
               <span className="font-cinzel text-base text-primary font-bold">

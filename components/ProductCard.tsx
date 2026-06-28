@@ -17,7 +17,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     e.preventDefault();
     e.stopPropagation();
 
-    if (product.category === 'dry-sweets') {
+    if (product.category === 'dry-sweets' || product.category === 'party-trays') {
       openMixMatch(product);
     } else {
       // Default to minimum order qty if specified (e.g. 10 for Pitha)

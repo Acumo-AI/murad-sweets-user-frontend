@@ -81,7 +81,7 @@ export default function ProductDetailPage() {
   };
 
   const handleAddToCart = () => {
-    if (product.category === 'dry-sweets') {
+    if (product.category === 'dry-sweets' || product.category === 'party-trays') {
       openMixMatch(product);
       return;
     }
@@ -239,7 +239,7 @@ export default function ProductDetailPage() {
 
           {/* Actions */}
           <div className="space-y-4 pt-4 border-t border-border">
-            {product.inStock && product.category !== 'dry-sweets' && (
+            {product.inStock && product.category !== 'dry-sweets' && product.category !== 'party-trays' && (
               <div className="flex items-center space-x-4">
                 <span className="font-cinzel text-xs uppercase tracking-wider text-brown font-semibold">
                   Quantity
@@ -275,9 +275,13 @@ export default function ProductDetailPage() {
                   : 'btn-gold shadow-md text-white'
               }`}
             >
-              {product.category === 'dry-sweets' ? (
+              {product.category === 'dry-sweets' || product.category === 'party-trays' ? (
                 <>
-                  <span>Configure Mix & Match Box</span>
+                  <span>
+                    {product.category === 'party-trays'
+                      ? `Customize Your ${product.name}`
+                      : 'Configure Mix & Match Box'}
+                  </span>
                 </>
               ) : (
                 <>

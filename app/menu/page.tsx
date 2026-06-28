@@ -262,7 +262,7 @@ function CatalogContent() {
   // Track if we're programmatically scrolling (to prevent feedback loop)
   const isScrollingRef = useRef(false);
 
-  const { openCollectionModal } = useCart();
+  const { openCollectionModal, openMixMatch } = useCart();
   const { products: PRODUCTS, categories, fetchCatalog, isLoading } = useCatalog();
 
   const CATEGORY_PILLS = categories
@@ -364,6 +364,7 @@ function CatalogContent() {
     if (product.slug === 'mixmatch-3') openCollectionModal('dry-sweets', 3);
     else if (product.slug === 'mixmatch-6') openCollectionModal('dry-sweets', 6);
     else if (product.slug === 'mixmatch-9') openCollectionModal('dry-sweets', 9);
+    else if (product.category === 'party-trays') openMixMatch(product);
     else setSelectedProduct(product);
   };
 

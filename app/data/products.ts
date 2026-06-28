@@ -185,22 +185,26 @@ export const PRODUCTS: Product[] = [
     slug: 'small-party-tray',
     name: 'Small Party Tray',
     category: 'party-trays',
-    description: 'A beautiful arrangement of 15-18 assorted premium dry sweets, perfect for family get-togethers and intimate celebrations.',
+    description: 'A beautiful arrangement of 18 assorted premium dry sweets, perfect for family get-togethers and intimate celebrations.',
     price: 30,
     unit: 'per tray (~18 pcs)',
     images: ['/SmallPartyTray.png'],
-    inStock: true
+    inStock: true,
+    product_type: 'custom_box',
+    isMixMatch: true
   },
   {
     id: '17',
     slug: 'large-party-tray',
     name: 'Large Party Tray',
     category: 'party-trays',
-    description: 'A grand presentation tray with 35-40 pieces of our finest sweets, featuring an assortment of chom chom, kalojam, shandesh, and laddus.',
+    description: 'A grand presentation tray with 40 pieces of our finest sweets, featuring an assortment of chom chom, kalojam, shandesh, and laddus.',
     price: 60,
     unit: 'per tray (~40 pcs)',
     images: ['/LargePartyTray.png'],
-    inStock: true
+    inStock: true,
+    product_type: 'custom_box',
+    isMixMatch: true
   },
   {
     id: '18',

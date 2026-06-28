@@ -20,6 +20,12 @@ export default function MixMatchModal() {
 
   const [boxSize, setBoxSize] = useState<3 | 6 | 9>(3);
   const [selections, setSelections] = useState<{ [productId: string]: number }>({});
+  const [boxQuantity, setBoxQuantity] = useState(1);
+
+  const isPartyTray = mixMatchProduct?.category === 'party-trays';
+  const fixedSize = mixMatchProduct?.slug === 'small-party-tray' ? 18 : (mixMatchProduct?.slug === 'large-party-tray' ? 40 : null);
+  const activeBoxSize = fixedSize || boxSize;
+  const activePrice = isPartyTray ? mixMatchProduct!.price : MIX_MATCH_PRICES[activeBoxSize as 3 | 6 | 9];
 
   // Filter available dry sweets that are in stock
   const drySweets = PRODUCTS.filter((p) => p.category === 'dry-sweets' && p.inStock);
@@ -27,19 +33,25 @@ export default function MixMatchModal() {
   // Initialize/Reset selections when product changes or box size changes
   useEffect(() => {
     if (mixMatchProduct) {
-      // Start with 1 of the clicked sweet
-      setSelections({
-        [mixMatchProduct.id]: 1
-      });
+      if (mixMatchProduct.category === 'dry-sweets') {
+        // Start with 1 of the clicked sweet
+        setSelections({
+          [mixMatchProduct.id]: 1
+        });
+      } else {
+        setSelections({});
+      }
+      setBoxQuantity(1);
     } else {
       setSelections({});
+      setBoxQuantity(1);
     }
   }, [mixMatchProduct]);
 
   if (!mixMatchProduct) return null;
 
   const currentTotal = Object.values(selections).reduce((acc, qty) => acc + qty, 0);
-  const isBoxFull = currentTotal === boxSize;
+  const isBoxFull = currentTotal === activeBoxSize;
 
   const handleSizeChange = (size: 3 | 6 | 9) => {
     setBoxSize(size);
@@ -56,7 +68,7 @@ export default function MixMatchModal() {
     if (newQty < 0) return;
 
     // Prevent exceeding the box size
-    if (delta > 0 && currentTotal >= boxSize) return;
+    if (delta > 0 && currentTotal >= activeBoxSize) return;
 
     setSelections({
       ...selections,
@@ -79,18 +91,16 @@ export default function MixMatchModal() {
         };
       });
 
-    const price = MIX_MATCH_PRICES[boxSize];
-
     addToCart({
-      productId: `mixmatch-${boxSize}`,
-      name: `${boxSize} Pcs Mix & Match Box`,
-      price,
-      quantity: 1,
-      image: BOX_IMAGES[boxSize],
-      unit: 'Custom Assortment',
+      productId: isPartyTray ? mixMatchProduct.id : `mixmatch-${activeBoxSize}`,
+      name: isPartyTray ? mixMatchProduct.name : `${activeBoxSize} Pcs Mix & Match Box`,
+      price: activePrice,
+      quantity: boxQuantity,
+      image: isPartyTray ? (mixMatchProduct.images[0] || '') : BOX_IMAGES[activeBoxSize as 3|6|9],
+      unit: mixMatchProduct.unit || 'Custom Assortment',
       mixMatch: {
-        size: boxSize,
-        price,
+        size: activeBoxSize as any,
+        price: activePrice,
         selectedItems
       }
     });
@@ -137,53 +147,55 @@ export default function MixMatchModal() {
             {/* Scrollable Body */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 no-scrollbar">
               {/* Box Size Selector */}
-              <div>
-                <span className="block font-cinzel text-xs uppercase tracking-wider text-primary-deep mb-3 font-semibold">
-                  1. Choose Box Size
-                </span>
-                <div className="grid grid-cols-3 gap-3">
-                  {([3, 6, 9] as const).map((size) => {
-                    const price = MIX_MATCH_PRICES[size];
-                    const isSelected = boxSize === size;
-                    return (
-                      <button
-                        key={size}
-                        onClick={() => handleSizeChange(size)}
-                        className={`p-3 rounded-lg border text-center transition-all duration-300 flex flex-col items-center justify-between gap-2.5 ${
-                          isSelected
-                            ? 'bg-primary border-primary text-white shadow-md'
-                            : 'bg-white border-border text-primary-deep hover:border-primary/50'
-                        }`}
-                      >
-                        <div className="relative w-12 h-12 sm:w-16 sm:h-16 bg-blush/30 rounded-lg overflow-hidden shadow-inner shrink-0">
-                          <Image
-                            src={BOX_IMAGES[size]}
-                            alt={`${size} Pieces Box`}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 640px) 48px, 64px"
-                          />
-                        </div>
-                        <div>
-                          <span className="font-cinzel text-xs sm:text-sm font-bold block">{size} Pieces</span>
-                          <span className={`text-xs block mt-0.5 ${isSelected ? 'text-accent' : 'text-[#681628] font-bold'}`}>
-                            ${price}.00
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
+              {!isPartyTray && (
+                <div>
+                  <span className="block font-cinzel text-xs uppercase tracking-wider text-primary-deep mb-3 font-semibold">
+                    1. Choose Box Size
+                  </span>
+                  <div className="grid grid-cols-3 gap-3">
+                    {([3, 6, 9] as const).map((size) => {
+                      const price = MIX_MATCH_PRICES[size];
+                      const isSelected = boxSize === size;
+                      return (
+                        <button
+                          key={size}
+                          onClick={() => handleSizeChange(size)}
+                          className={`p-3 rounded-lg border text-center transition-all duration-300 flex flex-col items-center justify-between gap-2.5 ${
+                            isSelected
+                              ? 'bg-primary border-primary text-white shadow-md'
+                              : 'bg-white border-border text-primary-deep hover:border-primary/50'
+                          }`}
+                        >
+                          <div className="relative w-12 h-12 sm:w-16 sm:h-16 bg-blush/30 rounded-lg overflow-hidden shadow-inner shrink-0">
+                            <Image
+                              src={BOX_IMAGES[size]}
+                              alt={`${size} Pieces Box`}
+                              fill
+                              className="object-cover"
+                              sizes="(max-width: 640px) 48px, 64px"
+                            />
+                          </div>
+                          <div>
+                            <span className="font-cinzel text-xs sm:text-sm font-bold block">{size} Pieces</span>
+                            <span className={`text-xs block mt-0.5 ${isSelected ? 'text-accent' : 'text-[#681628] font-bold'}`}>
+                              ${price}.00
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Sweet Selector Section */}
               <div>
                 <div className="flex justify-between items-center border-b border-border pb-2.5 mb-4">
                   <span className="font-cinzel text-xs uppercase tracking-wider text-primary-deep font-semibold">
-                    2. Select Sweets ({currentTotal} of {boxSize} pcs)
+                    {isPartyTray ? '1.' : '2.'} Select Sweets ({currentTotal} of {activeBoxSize} pcs)
                   </span>
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded font-cinzel ${isBoxFull ? 'bg-primary text-white' : 'bg-blush text-primary'}`}>
-                    {isBoxFull ? 'Box Filled!' : `${boxSize - currentTotal} remaining`}
+                    {isBoxFull ? 'Box Filled!' : `${activeBoxSize - currentTotal} remaining`}
                   </span>
                 </div>
 
@@ -251,22 +263,33 @@ export default function MixMatchModal() {
               <div className="flex flex-col">
                 <span className="text-[10px] text-brown uppercase font-semibold tracking-wider font-cinzel">Total Price</span>
                 <span className="font-cinzel text-xl text-primary font-bold">
-                  ${MIX_MATCH_PRICES[boxSize]}.00
+                  ${activePrice * boxQuantity}.00
                 </span>
               </div>
 
-              <button
-                onClick={handleAddBoxToCart}
-                disabled={!isBoxFull}
-                className={`py-3 px-8 text-xs font-semibold uppercase tracking-widest rounded-lg flex items-center justify-center space-x-2 transition-all duration-300 ${
-                  isBoxFull
-                    ? 'btn-gold shadow-md'
-                    : 'bg-gray-200 text-gray-400 border border-gray-300 cursor-not-allowed'
-                }`}
-              >
-                {isBoxFull && <Check className="h-4 w-4 mr-1 text-accent" />}
-                <span>{isBoxFull ? 'Add Custom Box' : `Fill Box (${boxSize - currentTotal} left)`}</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 bg-[#FAF6F0] border border-[#E8C8C8] rounded-lg px-2 py-1.5 h-[48px]">
+                  <button onClick={() => setBoxQuantity(Math.max(1, boxQuantity - 1))} className="p-0.5 text-primary">
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="text-sm font-bold text-primary-deep font-cinzel w-6 text-center select-none">{boxQuantity}</span>
+                  <button onClick={() => setBoxQuantity(boxQuantity + 1)} className="p-0.5 text-primary">
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+                <button
+                  onClick={handleAddBoxToCart}
+                  disabled={!isBoxFull}
+                  className={`h-[48px] px-8 text-xs font-semibold uppercase tracking-widest rounded-lg flex items-center justify-center space-x-2 transition-all duration-300 ${
+                    isBoxFull
+                      ? 'btn-gold shadow-md'
+                      : 'bg-gray-200 text-gray-400 border border-gray-300 cursor-not-allowed'
+                  }`}
+                >
+                  {isBoxFull && <Check className="h-4 w-4 mr-1 text-accent" />}
+                  <span>{isBoxFull ? 'Add To Cart' : `Fill Box (${activeBoxSize - currentTotal} left)`}</span>
+                </button>
+              </div>
             </div>
           </motion.div>
         </>

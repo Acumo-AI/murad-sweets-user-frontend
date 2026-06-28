@@ -85,6 +85,7 @@ export const createOrder = async (
     phone: string;
     notes?: string;
     paymentMethod: string;
+    deliveryFeeCents?: number;
   }
 ) => {
   const payload = {
@@ -103,6 +104,7 @@ export const createOrder = async (
     phone: formData.phone,
     notes: formData.notes || '',
     paymentMethod: formData.paymentMethod,
+    deliveryFeeCents: formData.deliveryFeeCents || 0,
     items: cartItems.map(toCartItemSchema),
   };
   const response = await api.post('/orders', payload);

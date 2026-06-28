@@ -4,8 +4,8 @@ import { Product } from '@/app/data/products';
 import { useFulfillmentStore } from './fulfillmentStore';
 
 export type MixMatchBox = {
-  size: 3 | 6 | 9;
-  price: 5 | 10 | 15;
+  size: 3 | 6 | 9 | 18 | 40;
+  price: number;
   selectedItems: { id: string; name: string; quantity: number }[]; // array of sweets selected in the box
 };
 
